@@ -121,6 +121,12 @@
         <div class="calc-keys" id="calcKeys"></div>
       </div>
     </section>
+
+    <section>
+  <h2>Custom Thump</h2>
+  <div class="numpad" id="customPresetArea"></div>
+</section>
+
   </div>
 
   <script type="module">
@@ -207,6 +213,20 @@
       };
       calcKeys.appendChild(btn);
     });
+    const customPresetArea = document.getElementById("customPresetArea");
+const storedPresets = localStorage.getItem('customPresets');
+if (storedPresets) {
+  const presets = JSON.parse(storedPresets);
+  presets.forEach(preset => {
+    const btn = document.createElement("button");
+    btn.textContent = preset;
+    btn.onclick = () => {
+      set(ref(db, `data/${accompliceCode}/text`), preset);
+    };
+    customPresetArea.appendChild(btn);
+  });
+}
+
   </script>
 </body>
 </html>
