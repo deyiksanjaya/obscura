@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#000000">
+  <title>Obscura - Guest Sender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      font-family: 'Cardo', serif;
+      background: radial-gradient(ellipse at center, #111 0%, #000 100%);
+      color: #e0e0e0;
+      overflow: hidden;
+      text-align: center;
+    }
+    /* PERBAIKAN UTAMA: Menggunakan absolute positioning untuk centering */
+    .container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 400px;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .status-message {
+      font-size: 1.2em;
+      color: #aaa;
+    }
+    section {
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 20px 0;
+      margin-top: 20px;
+    }
+    h2 {
+      font-size: 18px;
+      color: #aaa;
+      margin: 0 0 15px 0;
+      font-weight: 400;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #eee;
+      text-align: center;
+    }
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .numpad button {
+      font-size: 20px;
+      padding: 16px;
+      background: rgba(255,255,255,0.05);
+      color: #eee;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .numpad button:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mainContainer" class="container hidden">
+    <section>
+      <h2>Kirim Teks</h2>
+      <input type="text" id="textInput" placeholder="Ketik lalu tekan Enter" />
+    </section>
+
+    <section>
+      <h2>Kirim Angka</h2>
+      <div class="numpad" id="numpad"></div>
+    </section>
+  </div>
+
+  <div id="statusContainer" class="container">
+    <p id="statusMessage" class="status-message">Menghubungkan...</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get, set, remove, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+      authDomain: "obscurabyheri.firebaseapp.com",
+      databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obscurabyheri",
+      storageBucket: "obscurabyheri.appspot.com",
+      messagingSenderId: "866868400960",
+      appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const mainContainer = document.getElementById('mainContainer');
+    const statusContainer = document.getElementById('statusContainer');
+    const statusMessage = document.getElementById('statusMessage');
+    const textInput = document.getElementById("textInput");
+    const numpad = document.getElementById("numpad");
+
+    let hostId = null;
+
+    // Fungsi untuk membuat halaman menjadi kosong
+    function goBlank(message) {
+        mainContainer.classList.add('hidden');
+        statusMessage.textContent = message;
+        statusContainer.classList.remove('hidden');
+    }
+
+    async function initializeGuestSession() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) {
+            goBlank("Link tidak valid.");
+            return;
+        }
+
+        const tokenRef = ref(db, `guestTokens/${token}`);
+        
+        try {
+            const snapshot = await get(tokenRef);
+            if (!snapshot.exists()) {
+                goBlank("Link sudah tidak berlaku atau salah.");
+                return;
+            }
+
+            hostId = snapshot.val().hostId;
+            
+            // Hapus token agar tidak bisa dipakai lagi
+            await remove(tokenRef);
+
+            // Pasang listener untuk memantau status host
+            const hostStatusRef = ref(db, `status/${hostId}`);
+            onValue(hostStatusRef, (snap) => {
+                // Jika status host hilang (null), putuskan koneksi
+                if (!snap.exists()) {
+                    goBlank("Koneksi dengan host terputus.");
+                }
+            });
+
+            // Tandai bahwa tamu ini terhubung
+            const guestPresenceRef = ref(db, `guestConnections/${hostId}`);
+            await set(guestPresenceRef, { connectedAt: Date.now() });
+            onDisconnect(guestPresenceRef).remove(); // Hapus status jika tamu menutup halaman
+
+            // Tampilkan UI utama
+            statusContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
+
+        } catch (error) {
+            console.error("Initialization error:", error);
+            goBlank("Gagal terhubung ke server.");
+        }
+    }
+
+    // Event listeners untuk mengirim data
+    textInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && textInput.value.trim() && hostId) {
+        set(ref(db, `data/${hostId}/text`), textInput.value.trim());
+        textInput.value = "";
+      }
+    });
+
+    [1,2,3,4,5,6,7,8,9,0].forEach(num => {
+      const btn = document.createElement("button");
+      btn.textContent = num;
+      btn.onclick = () => {
+        if (hostId) {
+            set(ref(db, `data/${hostId}/number`), num);
+        }
+      };
+      numpad.appendChild(btn);
+    });
+
+    initializeGuestSession();
+  </script>
+</body>
+</html>

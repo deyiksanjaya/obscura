@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <script src="auth-guard.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111111">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Obscura - Main Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { 
+        height: 100%; 
+        background: radial-gradient(ellipse at center, #111 0%, #000 100%); 
+        font-family: 'Cardo', serif; 
+        color: #e0e0e0; 
+        animation: fadeIn 1.2s ease forwards; 
+        opacity: 0; 
+        overflow: hidden;
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+    body { 
+        display: flex; 
+        flex-direction: column; 
+    }
+    
+    .scroll-container { 
+        flex: 1;
+        overflow-y: auto;
+        padding: 40px 0;
+    }
+
+    .menu-column { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 32px; 
+        align-items: center; 
+        width: 100%; 
+        position: relative; 
+        padding-bottom: 40px;
+    }
+    .menu-item { width: 90vw; max-width: 300px; aspect-ratio: 1 / 1; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; background: rgba(255, 255, 255, 0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; text-align: center; text-decoration: none; color: inherit; position: relative; box-shadow: 0 0 10px rgba(255, 255, 255, 0.02); transform: translateY(30px); opacity: 0; animation: slideIn 0.6s ease forwards; }
+    .menu-item.disabled { opacity: 0.5 !important; cursor: not-allowed; background: rgba(255, 255, 255, 0.01); transform: scale(0.98); }
+    .menu-item.disabled:hover { transform: scale(0.98); box-shadow: 0 0 10px rgba(255, 255, 255, 0.02); }
+    
+    .menu-item:nth-child(1) { animation-delay: 0.4s; }
+    .menu-item:nth-child(2) { animation-delay: 0.6s; }
+    .menu-item:nth-child(3) { animation-delay: 0.8s; }
+    .menu-item:nth-child(4) { animation-delay: 1.0s; }
+
+    @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
+    .menu-item:not(.disabled):hover { background: rgba(255, 255, 255, 0.04); transform: scale(1.03); box-shadow: 0 0 12px rgba(255, 255, 255, 0.1); }
+    .menu-item svg { width: 48px; height: 48px; margin-bottom: 12px; fill: #ffffff; opacity: 0.8; }
+    .menu-item span { font-size: 16px; letter-spacing: 1px; }
+
+    .top-info {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+        pointer-events: none;
+    }
+    #userCodeDisplay, #connectionInfo {
+        color: #999;
+        font-size: 12px;
+        background: rgba(255,255,255,0.05);
+        padding: 5px 10px;
+        border-radius: 8px;
+        opacity: 0;
+        animation: fadeIn 1s ease forwards;
+        animation-delay: 0.5s;
+    }
+    #connectionInfo {
+        text-align: right;
+        /* Menghapus white-space: pre-line karena tidak ada lagi baris baru */
+    }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+    .modal-content { background: #1a1a1a; padding: 25px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; }
+    .modal-overlay.visible .modal-content { transform: scale(1); }
+    #requestMessage { margin: 0; margin-bottom: 20px; font-size: 18px; }
+    .modal-buttons { display: flex; gap: 15px; }
+    .modal-buttons button { flex: 1; padding: 10px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
+    #acceptBtn { background-color: #28a745; color: white; }
+    #acceptBtn:hover { background-color: #218838; }
+    #denyBtn { background-color: #dc3545; color: white; }
+    #denyBtn:hover { background-color: #c82333; }
+  </style>
+</head>
+<body>
+  <div class="top-info">
+    <div id="userCodeDisplay"></div>
+    <div id="connectionInfo">Mengecek koneksi...</div>
+  </div>
+
+  <div class="scroll-container">
+    <div class="menu-column">
+      <!-- Receiver -->
+      <a href="receiver.html" class="menu-item" id="receiver">
+        <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6zm0 2.2L18 9v10H6V9l6-3.8zM12 12a2 2 0 110 4 2 2 0 010-4z"/></svg>
+        <span>Receiver</span>
+      </a>
+      <!-- Sender -->
+      <a href="sender.html" class="menu-item" id="sender">
+        <svg viewBox="0 0 24 24"><path d="M2 3v18l20-9L2 3zm2.18 2.5L17 12 4.18 18.5V5.5z"/></svg>
+        <span>Sender</span>
+      </a>
+      <!-- Settings -->
+      <a href="api.html" class="menu-item">
+        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg>
+        <span>Settings</span>
+      </a>
+      <!-- Instructions Button -->
+      <a href="instructions.html" class="menu-item">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        <span>Instructions</span>
+      </a>
+    </div>
+  </div>
+
+  <div id="requestModal" class="modal-overlay">
+    <div class="modal-content">
+      <p id="requestMessage">Pengguna ingin terkoneksi</p>
+      <div class="modal-buttons">
+        <button id="denyBtn">Tolak</button>
+        <button id="acceptBtn">Izinkan</button>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+      authDomain: "obscurabyheri.firebaseapp.com",
+      databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obscurabyheri",
+      storageBucket: "obscurabyheri.appspot.com",
+      messagingSenderId: "866868400960",
+      appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
+    };
+
+    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const db = getDatabase(app);
+    const info = document.getElementById('connectionInfo');
+    const userCodeDisplay = document.getElementById('userCodeDisplay');
+    const receiverLink = document.getElementById('receiver');
+    const senderLink = document.getElementById('sender');
+    const requestModal = document.getElementById('requestModal');
+    const requestMessage = document.getElementById('requestMessage');
+    const acceptBtn = document.getElementById('acceptBtn');
+    const denyBtn = document.getElementById('denyBtn');
+
+    function updateUserCodeDisplay() {
+        const myCode = localStorage.getItem('myCode');
+        if (myCode) {
+            // PERUBAHAN 1: Mengganti "Kode Anda" dengan "ID :"
+            userCodeDisplay.textContent = `ID : ${myCode}`;
+        } else {
+            userCodeDisplay.textContent = 'ID Belum Diatur';
+        }
+    }
+
+    function setMenuState(enabled, partnerCode = null) {
+        if (enabled && partnerCode) {
+            info.style.color = '#4caf50';
+            // PERUBAHAN 2: Hanya menampilkan kode partner
+            info.textContent = partnerCode;
+            receiverLink.classList.remove('disabled');
+            senderLink.classList.remove('disabled');
+            receiverLink.setAttribute('href', 'receiver.html');
+            senderLink.setAttribute('href', 'sender.html');
+        } else {
+            info.style.color = '#999';
+            info.textContent = localStorage.getItem('myCode') ? `Tidak Tersambung` : 'ID Belum Diatur';
+            receiverLink.classList.add('disabled');
+            senderLink.classList.add('disabled');
+            receiverLink.removeAttribute('href');
+            senderLink.removeAttribute('href');
+        }
+    }
+
+    function hideRequestModal() {
+        requestModal.classList.remove('visible');
+    }
+
+    function showRequestModal(requesterCode) {
+        const myCode = localStorage.getItem('myCode');
+        requestMessage.textContent = `Pengguna ${requesterCode} ingin terkoneksi`;
+        requestModal.classList.add('visible');
+
+        acceptBtn.onclick = async () => {
+            if (!myCode || !requesterCode) return;
+            await set(ref(db, `connections/${myCode}/partner`), requesterCode);
+            await set(ref(db, `connections/${requesterCode}/partner`), myCode);
+            await remove(ref(db, `connections/${myCode}/requestFrom`));
+            hideRequestModal();
+        };
+
+        denyBtn.onclick = async () => {
+            await remove(ref(db, `connections/${myCode}/requestFrom`));
+            hideRequestModal();
+        };
+    }
+
+    updateUserCodeDisplay();
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'myCode') {
+            updateUserCodeDisplay();
+        }
+    });
+
+    const myCode = localStorage.getItem('myCode');
+    if (myCode) {
+      const requestRef = ref(db, `connections/${myCode}/requestFrom`);
+      onValue(requestRef, (snap) => {
+          const requesterCode = snap.val();
+          if (requesterCode) {
+              if (!localStorage.getItem('accompliceCode')) {
+                  showRequestModal(requesterCode);
+              }
+          }
+      });
+
+      const partnerRef = ref(db, `connections/${myCode}/partner`);
+      onValue(partnerRef, (snap) => {
+        const partnerCode = snap.val();
+        setMenuState(!!partnerCode, partnerCode);
+        if (partnerCode) {
+          localStorage.setItem('accompliceCode', partnerCode);
+        } else {
+          localStorage.removeItem('accompliceCode');
+        }
+      });
+
+    } else {
+      setMenuState(false);
+    }
+  </script>
+</body>
+</html>

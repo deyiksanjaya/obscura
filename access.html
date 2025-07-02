@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <title>Obscura - Access Required</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Cardo', serif;
+      background: radial-gradient(ellipse at center, #111 0%, #000 100%);
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+    .main-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      width: 90%;
+      max-width: 380px; /* Batas lebar maksimum untuk layar besar */
+    }
+    .circle {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        animation: rotate 12s linear infinite;
+        z-index: 1;
+        filter: blur(0.8px);
+    }
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    h1 {
+      /* Menggunakan clamp untuk font responsif */
+      font-size: clamp(2.5rem, 10vw, 3.5rem);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0;
+      z-index: 2;
+    }
+    p {
+      color: #aaa;
+      margin-top: 10px;
+      margin-bottom: 25px;
+      z-index: 2;
+      font-size: clamp(1rem, 4vw, 1.1rem);
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      font-size: 1rem;
+      text-align: center;
+      text-transform: uppercase;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid #444;
+      color: #e0e0e0;
+      border-radius: 8px;
+      z-index: 2;
+      font-family: 'Cardo', serif;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-family: 'Cardo', serif;
+      color: white;
+      background-color: #28a745;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 2;
+    }
+    button:hover {
+      background-color: #218838;
+      transform: scale(1.02);
+    }
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+      transform: scale(1);
+    }
+    #statusMessage {
+      margin-top: 20px;
+      color: #dc3545;
+      height: 20px;
+      font-size: 0.9rem;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-content">
+    <div class="circle"></div>
+    <h1>OBSCURA</h1>
+    <p>Masukkan Kode Akses Sekali Pakai</p>
+    <input type="text" id="accessCode" placeholder="KODE-ANDA" autocomplete="off">
+    <button id="submitBtn">Masuk</button>
+    <div id="statusMessage"></div>
+  </div>
+
+  <script type="module">
+    if (localStorage.getItem('obscura_authorized') === 'true') {
+        window.location.replace('main.html');
+    }
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+      authDomain: "obscurabyheri.firebaseapp.com",
+      databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obscurabyheri",
+      storageBucket: "obscurabyheri.appspot.com",
+      messagingSenderId: "866868400960",
+      appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const codeInput = document.getElementById('accessCode');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('statusMessage');
+
+    const handleAccess = async () => {
+        const code = codeInput.value.trim().toUpperCase();
+        if (!code) {
+            statusMessage.textContent = "Kode tidak boleh kosong.";
+            return;
+        }
+
+        const accessRef = ref(db, `accessCodes/${code}`);
+        statusMessage.textContent = "Memverifikasi...";
+        submitBtn.disabled = true;
+
+        try {
+            const snapshot = await get(accessRef);
+            if (snapshot.exists()) {
+                statusMessage.textContent = "Berhasil! Mengarahkan...";
+                statusMessage.style.color = "#28a745";
+
+                await remove(accessRef);
+                localStorage.setItem('obscura_authorized', 'true');
+
+                setTimeout(() => {
+                    window.location.replace('main.html');
+                }, 1000);
+
+            } else {
+                statusMessage.textContent = "Kode Akses tidak valid atau sudah digunakan.";
+                submitBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error("Error verifying code:", error);
+            statusMessage.textContent = "Terjadi kesalahan jaringan.";
+            submitBtn.disabled = false;
+        }
+    };
+
+    submitBtn.addEventListener('click', handleAccess);
+    codeInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            handleAccess();
+        }
+    });
+  </script>
+</body>
+</html>

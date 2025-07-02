@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <link rel="manifest" href="manifest.webmanifest">
+  <!-- THEME COLOR DIPERBARUI -->
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Obscura</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      background: radial-gradient(ellipse at center, #111 0%, #000 100%);
+      font-family: 'Cardo', serif;
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+
+    .fog {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: url('https://www.transparenttextures.com/patterns/dark-mosaic.png');
+      animation: fogMove 20s linear infinite;
+      opacity: 0.03;
+      z-index: 0;
+    }
+
+    @keyframes fogMove {
+      from { transform: translate(0, 0); }
+      to { transform: translate(-50%, -50%); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      animation: fadeIn 3s ease forwards;
+    }
+
+    h1 {
+  font-size: clamp(32px, 14vw, 120px);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #ccc;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  animation: titleIn 3s ease forwards;
+  z-index: 2;
+  position: relative;
+}
+
+
+    .circle {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      animation: rotate 12s linear infinite;
+      z-index: 1;
+      filter: blur(0.8px);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.02);
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0 }
+      100% { opacity: 1 }
+    }
+
+    @keyframes titleIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      60% { opacity: 1; transform: scale(1.05); filter: brightness(1.3); }
+      80% { filter: brightness(0.8); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .fade-out {
+      animation: fadeOut 1s forwards;
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: scale(0.95); }
+    }
+
+    .fade-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black;
+      opacity: 0;
+      z-index: 3;
+      transition: opacity 1s ease;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="fog"></div>
+  <div class="container" id="intro">
+    <div class="circle"></div>
+    <h1>OBSCURA</h1>
+  </div>
+  <div class="fade-layer" id="fade-layer"></div>
+
+  <script>
+    setTimeout(() => {
+      document.getElementById('intro').classList.add('fade-out');
+      document.getElementById('fade-layer').style.opacity = 1;
+      setTimeout(() => {
+        // Mengarahkan ke halaman gerbang, bukan main.html
+        window.location.href = 'access.html';
+      }, 1000);
+    }, 4000);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registered!'))
+        .catch(err => console.error('SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<script src="auth-guard.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Obscura - Instruksi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Cardo', serif;
+      background: radial-gradient(ellipse at center, #111 0%, #000 100%);
+      color: #e0e0e0;
+      line-height: 1.8;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px 30px 50px 30px;
+    }
+    .title-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 150px;
+        margin-bottom: 10px;
+    }
+    h1 {
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      font-size: 2.5em;
+      margin: 0;
+      z-index: 2;
+    }
+    .circle {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        animation: rotate 12s linear infinite;
+        z-index: 1;
+        filter: blur(0.8px);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.02);
+    }
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    h2 {
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 10px;
+      margin-top: 30px;
+      margin-bottom: 20px;
+    }
+    p, li {
+      font-size: 1.1em;
+      color: #ccc;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      background: rgba(255,255,255,0.03);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 3px solid #4caf50;
+    }
+    strong {
+      font-weight: 700;
+      color: #fff;
+    }
+    .intro-box {
+        background: rgba(0,0,0,0.2);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .credit {
+      text-align: center;
+      margin-top: 60px;
+      color: #888;
+      font-style: italic;
+    }
+    .back-button {
+        display: block;
+        width: fit-content;
+        margin: 40px auto 0 auto;
+        padding: 10px 25px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #e0e0e0;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+    }
+    .back-button:hover {
+        background-color: rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-container">
+      <div class="circle"></div>
+      <h1>OBSCURA</h1>
+    </div>
+    
+    <p style="text-align: center; margin-top:30px; margin-bottom: 40px; color: #999;">Panduan Penggunaan</p>
+
+    <!-- BAGIAN PENGENALAN BARU -->
+    <div class="intro-box">
+        <p>Selamat datang di <strong>Obscura</strong>. Ini adalah proyek independen yang lahir dari sebuah hobi dan hasrat untuk dunia sulap, terutama seni mentalisme. Dikonsepkan oleh <strong>@pesulapgabut</strong>, aplikasi ini bukanlah produk komersial dan tidak untuk diperjualbelikan.</p>
+        <p>Obscura didedikasikan sepenuhnya untuk dapat digunakan secara gratis oleh teman-teman terdekat sebagai sarana untuk menyalurkan ide dan kreativitas. Selamat menggunakan.</p>
+    </div>
+    <!-- AKHIR BAGIAN PENGENALAN -->
+
+    <h2>1. Memulai & Mendapatkan Kode Unik</h2>
+    <p>Setiap pengguna harus memiliki identitas unik untuk dapat terhubung. Identitas ini berupa <strong>kode 6 digit</strong>.</p>
+    <ul>
+      <li>Buka aplikasi dan masuk ke menu <strong>Settings</strong>.</li>
+      <li>Di bagian "Kode Unik Anda", masukkan 6 digit angka yang Anda inginkan.</li>
+      <li>Jika kode tersedia, kode tersebut akan disimpan sebagai identitas Anda. Jika sudah digunakan orang lain, silakan coba kode lain.</li>
+      <li>Kode ini akan selalu menjadi milik Anda sampai Anda menghapusnya.</li>
+    </ul>
+
+    <h2>2. Menghubungkan dengan Partner</h2>
+    <p>Obscura menggunakan sistem undangan. Anda tidak bisa langsung terhubung, melainkan harus mengirim permintaan yang akan disetujui oleh partner Anda.</p>
+    <ul>
+      <li><strong>Untuk Mengirim Undangan:</strong>
+        <br>1. Masuk ke menu <strong>Settings</strong>.
+        <br>2. Di bagian "Accomplice", masukkan kode 6 digit milik teman Anda.
+        <br>3. Tekan tombol "Kirim Permintaan Koneksi". Teman Anda akan menerima notifikasi.
+      </li>
+      <li><strong>Untuk Menerima Undangan:</strong>
+        <br>1. Pastikan Anda berada di halaman <strong>Menu Utama</strong>.
+        <br>2. Saat seseorang mengirim permintaan, sebuah kotak dialog akan muncul dengan pesan "Pengguna [kode] ingin terkoneksi".
+        <br>3. Tekan <strong>"Izinkan"</strong> untuk membuat koneksi, atau <strong>"Tolak"</strong> untuk membatalkan.
+      </li>
+    </ul>
+
+    <h2>3. Peran: Sender & Receiver</h2>
+    <p>Setelah terhubung, satu pengguna harus menjadi <strong>Sender</strong> (Pengirim) dan yang lainnya menjadi <strong>Receiver</strong> (Penerima). Kedua peran ini tidak bisa aktif bersamaan untuk menghindari konflik.</p>
+    <ul>
+        <li><strong>Sebagai Sender:</strong>
+            <br>1. Buka menu <strong>Sender</strong> dari halaman utama.
+            <br>2. Anda bisa mengirim teks (tekan Enter), angka cepat (tekan tombol angka), atau hasil kalkulator.
+            <br>3. Semua data yang Anda kirim akan langsung muncul di layar partner Anda.
+        </li>
+        <li><strong>Sebagai Receiver:</strong>
+            <br>1. Buka menu <strong>Receiver</strong> dari halaman utama.
+            <br>2. Layar Anda akan menampilkan data apa pun yang dikirim oleh Sender secara real-time.
+            <br>3. Terdapat tombol <strong>kontrol suara (TTS)</strong> di bawah teks. Secara default, suara dalam keadaan mati. Tekan tombol ini untuk mengaktifkan ("Voice On") atau menonaktifkan ("Voice Off") pembacaan teks otomatis.
+        </li>
+    </ul>
+
+    <h2>4. Mengelola Koneksi</h2>
+    <ul>
+        <li><strong>Memutuskan Sambungan:</strong>
+            <br>Untuk mengakhiri sesi dengan partner Anda, masuk ke menu <strong>Settings</strong> dan tekan tombol "Putuskan Sambungan". Ini akan menghapus koneksi dari kedua belah pihak.
+        </li>
+        <li><strong>Menghapus Semua Jejak:</strong>
+            <br>Tombol "Hapus Semua Jejak" di menu Settings akan secara permanen menghapus kode unik Anda, koneksi, dan semua data terkait dari server dan perangkat Anda. Gunakan dengan hati-hati!
+        </li>
+    </ul>
+
+    <a href="main.html" class="back-button">Kembali ke Menu Utama</a>
+
+    <div class="credit">
+      <p>Conceptor: @pesulapgabut</p>
+    </div>
+  </div>
+  <script>
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+      authDomain: "obscurabyheri.firebaseapp.com",
+      databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obscurabyheri",
+      storageBucket: "obscurabyheri.appspot.com",
+      messagingSenderId: "866868400960",
+      appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
+    }; 
+  </script>
+</body>
+</html>
