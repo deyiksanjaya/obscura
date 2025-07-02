@@ -92,7 +92,6 @@
   <div id="popup"></div>
 
   <script type="module">
-    // 3. KONFIGURASI FIREBASE LANGSUNG DI SINI
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -188,9 +187,7 @@
     disconnectBtn.addEventListener('click', async () => {
         const myCode = localStorage.getItem('myCode');
         const accompliceCode = localStorage.getItem('accompliceCode');
-
         if (!myCode || !accompliceCode) { showPopup("Anda sedang tidak terhubung dengan siapapun."); return; }
-
         if (confirm(`Anda yakin ingin memutuskan sambungan dengan ${accompliceCode}?`)) {
             try {
                 await remove(ref(db, `connections/${myCode}`));
@@ -235,7 +232,8 @@
     };
 
     async function clearAllData() {
-        const myCode = localStorage.getItem('myCode'); const accompliceCode = localStorage.getItem('accompliceCode');
+        const myCode = localStorage.getItem('myCode');
+        const accompliceCode = localStorage.getItem('accompliceCode');
         try {
             if (myCode) {
                 if (accompliceCode) { await remove(ref(db, `connections/${accompliceCode}`)); }
@@ -245,7 +243,12 @@
                 await remove(ref(db, `status/${myCode}`));
             }
         } catch (err) { console.error("Gagal menghapus data Firebase:", err); showPopup("Error saat menghapus data di cloud.");
-        } finally { localStorage.clear(); }
+        } finally {
+            // PERBAIKAN UTAMA: Hanya hapus data sesi, bukan semua data.
+            // Ini akan menjaga 'obscura_authorized' tetap aman.
+            localStorage.removeItem('myCode');
+            localStorage.removeItem('accompliceCode');
+        }
     }
     
     initializePage();
