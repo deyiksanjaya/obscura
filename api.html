@@ -85,6 +85,16 @@
   </section>
 
   <section>
+  <h2>Custom Thump</h2>
+  <input type="text" id="customPresetInput" placeholder="Pisahkan preset dengan koma (contoh: Merah, Bulat, 12)">
+  <div style="margin-top: 10px; display: flex; gap: 10px;">
+    <button id="savePresetBtn">Simpan Preset</button>
+    <button id="clearPresetBtn" style="background-color: #d32f2f; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">Hapus Preset</button>
+  </div>
+</section>
+
+
+  <section>
     <a href="main.html" style="text-decoration: none;"><button type="button">Kembali ke Menu</button></a>
     <button id="clearDataBtn" style="margin-top: 12px; background-color: #400; color: #f44336;">Hapus Semua Jejak</button>
   </section>
@@ -250,6 +260,26 @@
             localStorage.removeItem('accompliceCode');
         }
     }
+
+  const savePresetBtn = document.getElementById('savePresetBtn');
+  const clearPresetBtn = document.getElementById('clearPresetBtn');
+  const customPresetInput = document.getElementById('customPresetInput');
+
+  savePresetBtn.addEventListener('click', () => {
+    const input = customPresetInput.value.trim();
+    if (!input) return;
+
+    const presets = input.split(',').map(x => x.trim()).filter(Boolean);
+    localStorage.setItem('customPresets', JSON.stringify(presets));
+    alert('Preset disimpan!');
+  });
+
+  clearPresetBtn.addEventListener('click', () => {
+    localStorage.removeItem('customPresets');
+    customPresetInput.value = '';
+    alert('Preset dihapus!');
+  });
+
     
     initializePage();
   </script>
