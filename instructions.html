@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<script src="auth-guard.js"></script>
+  <!-- SATPAM KEAMANAN -->
+  <script src="auth-guard.js"></script>
+
   <link rel="manifest" href="manifest.webmanifest">
+  <!-- THEME COLOR DIPERBARUI -->
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -60,8 +63,14 @@
       color: #fff;
       border-bottom: 1px solid rgba(255,255,255,0.1);
       padding-bottom: 10px;
-      margin-top: 30px;
+      margin-top: 40px;
       margin-bottom: 20px;
+    }
+    h3 {
+        color: #fff;
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 5px;
     }
     p, li {
       font-size: 1.1em;
@@ -121,81 +130,70 @@
     
     <p style="text-align: center; margin-top:30px; margin-bottom: 40px; color: #999;">Panduan Penggunaan</p>
 
-    <!-- BAGIAN PENGENALAN BARU -->
     <div class="intro-box">
         <p>Selamat datang di <strong>Obscura</strong>. Ini adalah proyek independen yang lahir dari sebuah hobi dan hasrat untuk dunia sulap, terutama seni mentalisme. Dikonsepkan oleh <strong>@pesulapgabut</strong>, aplikasi ini bukanlah produk komersial dan tidak untuk diperjualbelikan.</p>
         <p>Obscura didedikasikan sepenuhnya untuk dapat digunakan secara gratis oleh teman-teman terdekat sebagai sarana untuk menyalurkan ide dan kreativitas. Selamat menggunakan.</p>
     </div>
-    <!-- AKHIR BAGIAN PENGENALAN -->
 
-    <h2>1. Memulai & Mendapatkan Kode Unik</h2>
-    <p>Setiap pengguna harus memiliki identitas unik untuk dapat terhubung. Identitas ini berupa <strong>kode 6 digit</strong>.</p>
+    <h2>1. Memulai & Terhubung</h2>
     <ul>
-      <li>Buka aplikasi dan masuk ke menu <strong>Settings</strong>.</li>
-      <li>Di bagian "Kode Unik Anda", masukkan 6 digit angka yang Anda inginkan.</li>
-      <li>Jika kode tersedia, kode tersebut akan disimpan sebagai identitas Anda. Jika sudah digunakan orang lain, silakan coba kode lain.</li>
-      <li>Kode ini akan selalu menjadi milik Anda sampai Anda menghapusnya.</li>
-    </ul>
-
-    <h2>2. Menghubungkan dengan Partner</h2>
-    <p>Obscura menggunakan sistem undangan. Anda tidak bisa langsung terhubung, melainkan harus mengirim permintaan yang akan disetujui oleh partner Anda.</p>
-    <ul>
-      <li><strong>Untuk Mengirim Undangan:</strong>
-        <br>1. Masuk ke menu <strong>Settings</strong>.
-        <br>2. Di bagian "Accomplice", masukkan kode 6 digit milik teman Anda.
-        <br>3. Tekan tombol "Kirim Permintaan Koneksi". Teman Anda akan menerima notifikasi.
+      <li><strong>Membuat ID Anda:</strong>
+        <br>Setiap pengguna harus memiliki ID 6 digit. Buka menu <strong>Settings</strong>, lalu masukkan 6 digit angka di bagian "ID Anda" untuk membuat identitas permanen Anda.
       </li>
-      <li><strong>Untuk Menerima Undangan:</strong>
-        <br>1. Pastikan Anda berada di halaman <strong>Menu Utama</strong>.
-        <br>2. Saat seseorang mengirim permintaan, sebuah kotak dialog akan muncul dengan pesan "Pengguna [kode] ingin terkoneksi".
-        <br>3. Tekan <strong>"Izinkan"</strong> untuk membuat koneksi, atau <strong>"Tolak"</strong> untuk membatalkan.
+      <li><strong>Menghubungkan dengan Partner:</strong>
+        <br>Di menu <strong>Settings</strong>, masukkan ID teman Anda di kolom "Partner", lalu tekan "Kirim Permintaan Koneksi". Teman Anda harus menekan <strong>"Izinkan"</strong> pada notifikasi yang muncul di halaman utamanya.
       </li>
     </ul>
 
-    <h2>3. Peran: Sender & Receiver</h2>
-    <p>Setelah terhubung, satu pengguna harus menjadi <strong>Sender</strong> (Pengirim) dan yang lainnya menjadi <strong>Receiver</strong> (Penerima). Kedua peran ini tidak bisa aktif bersamaan untuk menghindari konflik.</p>
+    <h2>2. Halaman Sender (Pengirim)</h2>
+    <p>Halaman ini berfungsi sebagai "remote control" Anda untuk mengirim informasi. Anda hanya bisa mengaksesnya saat terhubung dengan seorang <strong>Partner</strong>.</p>
     <ul>
-        <li><strong>Sebagai Sender:</strong>
-            <br>1. Buka menu <strong>Sender</strong> dari halaman utama.
-            <br>2. Anda bisa mengirim teks (tekan Enter), angka cepat (tekan tombol angka), atau hasil kalkulator.
-            <br>3. Semua data yang Anda kirim akan langsung muncul di layar partner Anda.
+        <li>
+            <h3>Input Teks</h3>
+            Ketik pesan atau kata apa pun, lalu tekan <strong>Enter</strong> pada keyboard Anda untuk mengirimkannya.
         </li>
-        <li><strong>Sebagai Receiver:</strong>
-            <br>1. Buka menu <strong>Receiver</strong> dari halaman utama.
-            <br>2. Layar Anda akan menampilkan data apa pun yang dikirim oleh Sender secara real-time.
-            <br>3. Terdapat tombol <strong>kontrol suara (TTS)</strong> di bawah teks. Secara default, suara dalam keadaan mati. Tekan tombol ini untuk mengaktifkan ("Voice On") atau menonaktifkan ("Voice Off") pembacaan teks otomatis.
+        <li>
+            <h3>Input Angka Cepat</h3>
+            Gunakan tombol angka (0-9) untuk mengirim satu digit angka secara instan dengan sekali tekan.
+        </li>
+        <li>
+            <h3>Kalkulator</h3>
+            Gunakan kalkulator untuk melakukan perhitungan. Saat Anda menekan tombol <strong>=</strong>, hasilnya akan langsung dikirim ke partner Anda dan display kalkulator akan otomatis bersih, siap untuk perhitungan berikutnya.
         </li>
     </ul>
 
-    <h2>4. Mengelola Koneksi</h2>
+    <h2>3. Halaman Receiver (Penerima)</h2>
+    <p>Halaman ini berfungsi sebagai "layar" Anda untuk menerima informasi dari Sender atau Tamu.</p>
     <ul>
-        <li><strong>Memutuskan Sambungan:</strong>
-            <br>Untuk mengakhiri sesi dengan partner Anda, masuk ke menu <strong>Settings</strong> dan tekan tombol "Putuskan Sambungan". Ini akan menghapus koneksi dari kedua belah pihak.
+        <li>
+            <h3>Penerimaan Real-time</h3>
+            Layar akan secara otomatis menampilkan data apa pun (teks, angka, atau hasil kalkulator) yang dikirimkan kepada Anda. Data yang masuk bersifat sesaat dan akan digantikan oleh data baru.
         </li>
-        <li><strong>Menghapus Semua Jejak:</strong>
-            <br>Tombol "Hapus Semua Jejak" di menu Settings akan secara permanen menghapus kode unik Anda, koneksi, dan semua data terkait dari server dan perangkat Anda. Gunakan dengan hati-hati!
+        <li>
+            <h3>Text-to-Speech (TTS)</h3>
+            Secara default, suara akan <strong>aktif</strong> dan membacakan data yang masuk dalam Bahasa Indonesia. Anda bisa menekan tombol ikon <strong>speaker</strong> di bawah teks untuk mengontrolnya:
+            <br>- Tekan sekali untuk mematikan suara (Anda akan mendengar notifikasi "Voice Off").
+            <br>- Tekan lagi untuk mengaktifkannya kembali (Anda akan mendengar notifikasi "Voice On").
+        </li>
+        <li>
+            <h3>Tombol Clear Display</h3>
+            Gunakan tombol ini di pojok kanan atas untuk membersihkan layar secara manual jika diperlukan.
         </li>
     </ul>
 
+    <h2>4. Fitur Lanjutan: Link Tamu</h2>
+    <p>Fitur ini memungkinkan Anda menerima data dari seseorang yang tidak memiliki aplikasi ini.</p>
+    <ul>
+      <li>Di <strong>Menu Utama</strong>, tekan tombol "Buat Link Tamu".</li>
+      <li>Sebuah kotak dialog akan muncul. Tekan <strong>"Salin"</strong> atau <strong>"Bagikan"</strong> untuk memberikan link unik tersebut kepada tamu Anda.</li>
+      <li>Link ini hanya bisa digunakan <strong>SATU KALI</strong>. Saat tamu terhubung, status di Menu Utama Anda akan menjadi <strong>"Tamu Terhubung"</strong>.</li>
+    </ul>
+    
     <a href="main.html" class="back-button">Kembali ke Menu Utama</a>
 
     <div class="credit">
       <p>Conceptor: @pesulapgabut</p>
     </div>
   </div>
-  <script>
-   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
-      authDomain: "obscurabyheri.firebaseapp.com",
-      databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "obscurabyheri",
-      storageBucket: "obscurabyheri.appspot.com",
-      messagingSenderId: "866868400960",
-      appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
-    }; 
-  </script>
 </body>
 </html>
