@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- 1. SATPAM KEAMANAN -->
   <script src="auth-guard.js"></script>
+
   <link rel="manifest" href="manifest.webmanifest">
+  <!-- 2. THEME COLOR DIPERBARUI -->
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -35,7 +38,8 @@
     h2 {
       font-size: 18px;
       color: #aaa;
-      margin-bottom: 8px;
+      margin-bottom: 15px;
+      font-weight: 400;
     }
     input[type="text"] {
       width: 100%;
@@ -45,14 +49,14 @@
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.05);
       color: #eee;
+      text-align: center;
     }
     .numpad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-top: 12px;
     }
-    .numpad button, .api-btn, .calc-keys button {
+    .numpad button, .calc-keys button {
       font-size: 20px;
       padding: 16px;
       background: rgba(255,255,255,0.05);
@@ -60,21 +64,23 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.2s;
     }
-    .api-btn {
-      width: 100%; margin-top: 12px;
+    .numpad button:hover, .calc-keys button:hover {
+        background-color: rgba(255,255,255,0.1);
     }
     .calc {
       margin-top: 12px;
     }
     .calc-display {
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.2);
       padding: 16px;
       border-radius: 8px;
       font-size: 24px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       min-height: 32px;
       text-align: right;
+      word-wrap: break-word;
     }
     .calc-keys {
       display: grid;
@@ -119,7 +125,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -130,9 +136,10 @@
       messagingSenderId: "866868400960",
       appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
     };
-    import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+    const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
     const myCode = localStorage.getItem('myCode');
     const accompliceCode = localStorage.getItem('accompliceCode');
 
@@ -151,27 +158,25 @@
     const calcDisplay = document.getElementById("calcDisplay");
     const calcKeys = document.getElementById("calcKeys");
 
-    // **PERBAIKAN UTAMA DI SINI** // Kita akan langsung membuat path yang benar di setiap fungsi set()
-
-    // LOGIKA PENGIRIMAN DATA (DIPERBAIKI)
+    // LOGIKA PENGIRIMAN DATA
     textInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && textInput.value.trim()) {
-        // Path yang benar: 'data/{kode_pasangan}/text'
         set(ref(db, `data/${accompliceCode}/text`), textInput.value.trim());
         textInput.value = "";
       }
     });
 
+    // LOGIKA UNTUK MEMBUAT TOMBOL NUMPAD
     [1,2,3,4,5,6,7,8,9,0].forEach(num => {
       const btn = document.createElement("button");
       btn.textContent = num;
       btn.onclick = () => {
-        // Path yang benar: 'data/{kode_pasangan}/number'
         set(ref(db, `data/${accompliceCode}/number`), num);
       };
       numpad.appendChild(btn);
     });
 
+    // LOGIKA UNTUK MEMBUAT TOMBOL KALKULATOR
     let expression = "";
     const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
     keys.forEach(key => {
@@ -184,10 +189,13 @@
             if (typeof result === 'number') {
               result = Math.round(result * 1000) / 1000;
             }
-            // Path yang benar: 'data/{kode_pasangan}/calc'
             set(ref(db, `data/${accompliceCode}/calc`), result);
-            expression = result.toString();
-            calcDisplay.textContent = result;
+            
+            // --- PERUBAHAN UTAMA DI SINI ---
+            // Setelah mengirim, kosongkan kalkulator
+            expression = "";
+            calcDisplay.textContent = "";
+            
           } catch {
             calcDisplay.textContent = 'Error';
             expression = "";
