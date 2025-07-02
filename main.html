@@ -65,15 +65,16 @@
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .modal-overlay.visible { opacity: 1; pointer-events: auto; }
-    .modal-content { background: #1a1a1a; padding: 25px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; }
+    .modal-content { background: #1a1a1a; padding: 25px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; width: 90%; max-width: 400px; }
     .modal-overlay.visible .modal-content { transform: scale(1); }
-    #requestMessage { margin: 0; margin-bottom: 20px; font-size: 18px; }
-    .modal-buttons { display: flex; gap: 15px; }
+    .modal-title { font-size: 1.2em; margin-top: 0; margin-bottom: 20px; }
+    .modal-buttons { display: flex; gap: 15px; margin-top: 20px; }
     .modal-buttons button { flex: 1; padding: 10px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
-    #acceptBtn { background-color: #28a745; color: white; }
-    #acceptBtn:hover { background-color: #218838; }
-    #denyBtn { background-color: #dc3545; color: white; }
-    #denyBtn:hover { background-color: #c82333; }
+    #acceptBtn, #shareBtn { background-color: #28a745; color: white; }
+    #acceptBtn:hover, #shareBtn:hover { background-color: #218838; }
+    #denyBtn, #copyBtn { background-color: #6c757d; color: white; }
+    #denyBtn:hover, #copyBtn:hover { background-color: #5a6268; }
+    #guestLinkInput { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: #ccc; border-radius: 8px; text-align: center; font-size: 0.9em; }
   </style>
 </head>
 <body>
@@ -84,22 +85,29 @@
 
   <div class="scroll-container">
     <div class="menu-column">
+      <!-- Receiver -->
       <a href="receiver.html" class="menu-item" id="receiver">
         <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6zm0 2.2L18 9v10H6V9l6-3.8zM12 12a2 2 0 110 4 2 2 0 010-4z"/></svg>
         <span>Receiver</span>
       </a>
+      <!-- Sender -->
       <a href="sender.html" class="menu-item" id="sender">
         <svg viewBox="0 0 24 24"><path d="M2 3v18l20-9L2 3zm2.18 2.5L17 12 4.18 18.5V5.5z"/></svg>
         <span>Sender</span>
       </a>
+      <!-- Settings -->
       <a href="api.html" class="menu-item">
         <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg>
         <span>Settings</span>
       </a>
+      <!-- Instructions Button -->
       <a href="instructions.html" class="menu-item">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
         <span>Instructions</span>
       </a>
+      <!-- Guest Link Button -->
       <a href="#" class="menu-item" id="guestLinkBtn">
         <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
         <span>Buat Link Tamu</span>
@@ -109,10 +117,21 @@
 
   <div id="requestModal" class="modal-overlay">
     <div class="modal-content">
-      <p id="requestMessage">Pengguna ingin terkoneksi</p>
+      <p class="modal-title" id="requestMessage">Pengguna ingin terkoneksi</p>
       <div class="modal-buttons">
         <button id="denyBtn">Tolak</button>
         <button id="acceptBtn">Izinkan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shareModal" class="modal-overlay">
+    <div class="modal-content">
+      <p class="modal-title">Bagikan Link Tamu</p>
+      <input type="text" id="guestLinkInput" readonly>
+      <div class="modal-buttons">
+        <button id="copyBtn">Salin</button>
+        <button id="shareBtn">Bagikan</button>
       </div>
     </div>
   </div>
@@ -134,111 +153,189 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // DOM Elements
     const guestLinkBtn = document.getElementById('guestLinkBtn');
     const info = document.getElementById('connectionInfo');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const receiverLink = document.getElementById('receiver');
     const senderLink = document.getElementById('sender');
+    
+    // Request Modal Elements
     const requestModal = document.getElementById('requestModal');
     const requestMessage = document.getElementById('requestMessage');
     const acceptBtn = document.getElementById('acceptBtn');
     const denyBtn = document.getElementById('denyBtn');
 
-    // --- LOGIKA BARU UNTUK MENGELOLA STATUS KONEKSI ---
+    // Share Modal Elements
+    const shareModal = document.getElementById('shareModal');
+    const guestLinkInput = document.getElementById('guestLinkInput');
+    const copyBtn = document.getElementById('copyBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    
+    let currentConnectionType = null;
 
-    let currentConnectionType = null; // Bisa 'partner', 'guest', atau null
+    // Helper Functions
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #28a745; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1003; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s, bottom 0.5s;`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '1'; toast.style.bottom = '30px'; }, 100);
+        setTimeout(() => {
+            toast.style.opacity = '0'; toast.style.bottom = '20px';
+            setTimeout(() => toast.remove(), 500);
+        }, 3000);
+    }
+
+    function copyToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast("Link Tamu telah disalin!");
+        } catch (err) {
+            console.error('Gagal menyalin link: ', err);
+            showToast("Gagal menyalin link.");
+        }
+        document.body.removeChild(textArea);
+    }
+
+    // UI State Functions
+    function updateUserCodeDisplay() {
+        const myCode = localStorage.getItem('myCode');
+        if (myCode) { userCodeDisplay.textContent = `ID : ${myCode}`; } 
+        else { userCodeDisplay.textContent = 'ID Belum Diatur'; }
+    }
 
     function setMenuState(connectionType, partnerCode = null) {
       currentConnectionType = connectionType;
-
       if (connectionType === 'partner') {
-        info.style.color = '#4caf50';
-        info.textContent = partnerCode;
-        // Aktifkan kedua tombol
-        receiverLink.classList.remove('disabled');
-        senderLink.classList.remove('disabled');
-        receiverLink.setAttribute('href', 'receiver.html');
-        senderLink.setAttribute('href', 'sender.html');
+        info.style.color = '#4caf50'; info.textContent = partnerCode;
+        receiverLink.classList.remove('disabled'); senderLink.classList.remove('disabled');
+        receiverLink.setAttribute('href', 'receiver.html'); senderLink.setAttribute('href', 'sender.html');
       } else if (connectionType === 'guest') {
-        info.style.color = '#4caf50';
-        info.textContent = "Tamu Terhubung";
-        // Aktifkan hanya Receiver
-        receiverLink.classList.remove('disabled');
-        receiverLink.setAttribute('href', 'receiver.html');
-        // Nonaktifkan Sender
-        senderLink.classList.add('disabled');
-        senderLink.removeAttribute('href');
-      } else { // Tidak ada koneksi
-        info.style.color = '#999';
-        info.textContent = localStorage.getItem('myCode') ? `Tidak Tersambung` : 'ID Belum Diatur';
-        // Nonaktifkan kedua tombol
-        receiverLink.classList.add('disabled');
-        senderLink.classList.add('disabled');
-        receiverLink.removeAttribute('href');
-        senderLink.removeAttribute('href');
+        info.style.color = '#4caf50'; info.textContent = "Tamu Terhubung";
+        receiverLink.classList.remove('disabled'); receiverLink.setAttribute('href', 'receiver.html');
+        senderLink.classList.add('disabled'); senderLink.removeAttribute('href');
+      } else {
+        info.style.color = '#999'; info.textContent = localStorage.getItem('myCode') ? `Tidak Tersambung` : 'ID Belum Diatur';
+        receiverLink.classList.add('disabled'); senderLink.classList.add('disabled');
+        receiverLink.removeAttribute('href'); senderLink.removeAttribute('href');
       }
     }
 
-    // --- SISA KODE (dengan sedikit penyesuaian) ---
+    // Modal Functions
+    function hideRequestModal() { requestModal.classList.remove('visible'); }
+    function showRequestModal(requesterCode) {
+        const myCode = localStorage.getItem('myCode');
+        requestMessage.textContent = `Pengguna ${requesterCode} ingin terkoneksi`;
+        requestModal.classList.add('visible');
 
-    function showToast(message) { /* ... (fungsi sama) ... */ }
-    function copyToClipboard(text) { /* ... (fungsi sama) ... */ }
-    guestLinkBtn.addEventListener('click', async (e) => { /* ... (fungsi sama) ... */ });
-    function updateUserCodeDisplay() { /* ... (fungsi sama) ... */ }
-    function hideRequestModal() { /* ... (fungsi sama) ... */ }
-    function showRequestModal(requesterCode) { /* ... (fungsi sama) ... */ }
-    
-    updateUserCodeDisplay();
+        acceptBtn.onclick = async () => {
+            if (!myCode || !requesterCode) return;
+            await set(ref(db, `connections/${myCode}/partner`), requesterCode);
+            await set(ref(db, `connections/${requesterCode}/partner`), myCode);
+            await remove(ref(db, `connections/${myCode}/requestFrom`));
+            hideRequestModal();
+        };
+
+        denyBtn.onclick = async () => {
+            await remove(ref(db, `connections/${myCode}/requestFrom`));
+            hideRequestModal();
+        };
+    }
+    function hideShareModal() { shareModal.classList.remove('visible'); }
+    function showShareModal(url) {
+        guestLinkInput.value = url;
+        shareModal.classList.add('visible');
+    }
+
+    // Main Logic
+    function initializeAppLogic() {
+        updateUserCodeDisplay();
+        setMenuState(null);
+
+        const myCode = localStorage.getItem('myCode');
+        if (myCode) {
+            const requestRef = ref(db, `connections/${myCode}/requestFrom`);
+            onValue(requestRef, (snap) => {
+                const requesterCode = snap.val();
+                if (requesterCode && !currentConnectionType) { showRequestModal(requesterCode); }
+            });
+
+            const partnerRef = ref(db, `connections/${myCode}/partner`);
+            onValue(partnerRef, (snap) => {
+                const partnerCode = snap.val();
+                if (partnerCode) {
+                    localStorage.setItem('accompliceCode', partnerCode);
+                    setMenuState('partner', partnerCode);
+                } else {
+                    localStorage.removeItem('accompliceCode');
+                    if (currentConnectionType === 'partner') { setMenuState(null); }
+                }
+            });
+
+            const guestRef = ref(db, `guestConnections/${myCode}`);
+            onValue(guestRef, (snap) => {
+                if (!localStorage.getItem('accompliceCode')) {
+                    if (snap.exists()) { setMenuState('guest'); } 
+                    else { if (currentConnectionType === 'guest') { setMenuState(null); } }
+                }
+            });
+        }
+    }
+
+    // Event Listeners
     window.addEventListener('storage', (event) => {
         if (event.key === 'myCode') { updateUserCodeDisplay(); }
     });
 
-    const myCode = localStorage.getItem('myCode');
-    if (myCode) {
-      // Listener untuk permintaan koneksi partner
-      const requestRef = ref(db, `connections/${myCode}/requestFrom`);
-      onValue(requestRef, (snap) => {
-          const requesterCode = snap.val();
-          if (requesterCode && !currentConnectionType) {
-              showRequestModal(requesterCode);
-          }
-      });
+    guestLinkBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const myCode = localStorage.getItem('myCode');
+        if (!myCode) { alert("Anda harus memiliki ID terlebih dahulu. Atur di halaman Settings."); return; }
 
-      // Listener untuk koneksi partner yang sudah jadi
-      const partnerRef = ref(db, `connections/${myCode}/partner`);
-      onValue(partnerRef, (snap) => {
-        const partnerCode = snap.val();
-        if (partnerCode) {
-          localStorage.setItem('accompliceCode', partnerCode);
-          setMenuState('partner', partnerCode);
+        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
+        const guestTokenRef = ref(db, `guestTokens/${token}`);
+        await set(guestTokenRef, { hostId: myCode, createdAt: Date.now() });
+
+        const guestUrl = `${window.location.origin}${window.location.pathname.replace('main.html', '')}guest.html?token=${token}`;
+        showShareModal(guestUrl);
+    });
+
+    copyBtn.addEventListener('click', () => {
+        copyToClipboard(guestLinkInput.value);
+    });
+
+    shareBtn.addEventListener('click', async () => {
+        const linkToShare = guestLinkInput.value;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Undangan Obscura',
+                    text: 'Gunakan link ini untuk mengirim informasi kepada saya.',
+                    url: linkToShare,
+                });
+            } catch (err) {
+                console.error('Gagal berbagi:', err);
+            }
         } else {
-          localStorage.removeItem('accompliceCode');
-          // Jika tidak ada koneksi partner, cek apakah ada koneksi tamu
-          // Jika tidak, baru set status ke tidak terhubung
-          if (currentConnectionType === 'partner') {
-            setMenuState(null);
-          }
+            copyToClipboard(linkToShare);
+            showToast("Fitur Bagikan tidak didukung, link telah disalin.");
         }
-      });
+    });
 
-      // Listener untuk koneksi tamu
-      const guestRef = ref(db, `guestConnections/${myCode}`);
-      onValue(guestRef, (snap) => {
-          // Hanya tanggapi koneksi tamu jika tidak sedang terhubung dengan partner
-          if (!localStorage.getItem('accompliceCode')) {
-              if (snap.exists()) {
-                  setMenuState('guest');
-              } else {
-                  if (currentConnectionType === 'guest') {
-                      setMenuState(null);
-                  }
-              }
-          }
-      });
+    // Close modals when clicking overlay
+    requestModal.addEventListener('click', (e) => { if (e.target === requestModal) hideRequestModal(); });
+    shareModal.addEventListener('click', (e) => { if (e.target === shareModal) hideShareModal(); });
 
-    } else {
-      setMenuState(null);
-    }
+    // Initialize the app
+    initializeAppLogic();
   </script>
 </body>
 </html>
