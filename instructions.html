@@ -92,6 +92,8 @@
       color: #fff;
     }
     .intro-box {
+        text-align: justify;
+
         background: rgba(0,0,0,0.2);
         padding: 20px;
         border-radius: 8px;
@@ -119,6 +121,19 @@
     .back-button:hover {
         background-color: rgba(255,255,255,0.1);
     }
+    .fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
   </style>
 </head>
 <body>
@@ -128,70 +143,86 @@
       <h1>OBSCURA</h1>
     </div>
     
-    <p style="text-align: center; margin-top:30px; margin-bottom: 40px; color: #999;">Panduan Penggunaan</p>
+    <button id="forceRefreshBtn" style="display:block;margin:20px auto 0 auto;padding:10px 20px;background:#333;color:#fff;border:none;border-radius:8px;cursor:pointer">Update App</button>
+    <br>
+
 
     <div class="intro-box">
-        <p>Selamat datang di <strong>Obscura</strong>. Ini adalah proyek independen yang lahir dari sebuah hobi dan hasrat untuk dunia sulap, terutama seni mentalisme. Dikonsepkan oleh <strong>@pesulapgabut</strong>, aplikasi ini bukanlah produk komersial dan tidak untuk diperjualbelikan.</p>
-        <p>Obscura didedikasikan sepenuhnya untuk dapat digunakan secara gratis oleh teman-teman terdekat sebagai sarana untuk menyalurkan ide dan kreativitas. Selamat menggunakan.</p>
-    </div>
+      
+  <p class="fade-in" style="animation-delay: 0.2s;">
+  Selamat datang di <strong>Obscura</strong>. Ini adalah proyek independen yang lahir dari sebuah hobi dan hasrat untuk dunia sulap, terutama seni mentalisme. Dikonsepkan oleh <strong>@pesulapgabut</strong>, aplikasi ini bukanlah produk komersial dan tidak untuk diperjualbelikan.
+</p>
+<p class="fade-in" style="animation-delay: 0.4s;">
+  Obscura adalah aplikasi web interaktif yang memungkinkan seorang pesulap dan asistennya untuk berkomunikasi secara diam-diam selama pertunjukan berlangsung. Asisten (Sender) dapat mengirimkan sinyal, informasi, atau kode rahasia secara real-time kepada pesulap (Receiver), yang akan menerima pesan tersebut melalui tampilan layar atau suara (TTS). Sistem ini dirancang untuk digunakan secara praktis, tanpa terlihat mencolok oleh penonton.
+</p>
+<p class="fade-in" style="animation-delay: 0.6s;">
+  Obscura didedikasikan sepenuhnya untuk dapat digunakan secara gratis oleh teman-teman terdekat sebagai sarana untuk menyalurkan ide dan kreativitas dalam dunia pertunjukan. Selamat menggunakan.
+</p>
 
-    <h2>1. Memulai & Terhubung</h2>
-    <ul>
-      <li><strong>Membuat ID Anda:</strong>
-        <br>Setiap pengguna harus memiliki ID 6 digit. Buka menu <strong>Settings</strong>, lalu masukkan 6 digit angka di bagian "ID Anda" untuk membuat identitas permanen Anda.
-      </li>
-      <li><strong>Menghubungkan dengan Partner:</strong>
-        <br>Di menu <strong>Settings</strong>, masukkan ID teman Anda di kolom "Partner", lalu tekan "Kirim Permintaan Koneksi". Teman Anda harus menekan <strong>"Izinkan"</strong> pada notifikasi yang muncul di halaman utamanya.
-      </li>
-    </ul>
+<h2 class="fade-in" style="animation-delay: 0.8s;">1. Memulai & Terhubung</h2>
+<ul>
+  <li class="fade-in" style="animation-delay: 1s;"><strong>Membuat ID Anda:</strong><br>Setiap pengguna harus memiliki ID 6 digit. Buka menu <strong>Settings</strong>, lalu masukkan 6 digit angka di bagian "ID Anda" untuk membuat identitas permanen Anda.</li>
+  <li class="fade-in" style="animation-delay: 1.2s;"><strong>Menghubungkan dengan Partner:</strong><br>Di menu <strong>Settings</strong>, masukkan ID teman Anda di kolom "Partner", lalu tekan "Kirim Permintaan Koneksi". Teman Anda harus menekan <strong>"Izinkan"</strong> pada notifikasi yang muncul di halaman utamanya.</li>
+</ul>
 
-    <h2>2. Halaman Sender (Pengirim)</h2>
-    <p>Halaman ini berfungsi sebagai "remote control" Anda untuk mengirim informasi. Anda hanya bisa mengaksesnya saat terhubung dengan seorang <strong>Partner</strong>.</p>
-    <ul>
-        <li>
-            <h3>Input Teks</h3>
-            Ketik pesan atau kata apa pun, lalu tekan <strong>Enter</strong> pada keyboard Anda untuk mengirimkannya.
-        </li>
-        <li>
-            <h3>Input Angka Cepat</h3>
-            Gunakan tombol angka (0-9) untuk mengirim satu digit angka secara instan dengan sekali tekan.
-        </li>
-        <li>
-            <h3>Kalkulator</h3>
-            Gunakan kalkulator untuk melakukan perhitungan. Saat Anda menekan tombol <strong>=</strong>, hasilnya akan langsung dikirim ke partner Anda dan display kalkulator akan otomatis bersih, siap untuk perhitungan berikutnya.
-        </li>
-    </ul>
+<h2 class="fade-in" style="animation-delay: 1.4s;">2. Halaman Sender (Pengirim)</h2>
+<p class="fade-in" style="animation-delay: 1.6s;">Halaman ini berfungsi sebagai "remote control" Anda untuk mengirim informasi. Anda hanya bisa mengaksesnya saat terhubung dengan seorang <strong>Partner</strong>.</p>
+<ul>
+  <li class="fade-in" style="animation-delay: 1.8s;"><h3>Input Teks</h3>Ketik pesan atau kata apa pun, lalu tekan <strong>Enter</strong> pada keyboard Anda untuk mengirimkannya.</li>
+  <li class="fade-in" style="animation-delay: 2s;"><h3>Input Angka Cepat</h3>Gunakan tombol angka (0-9) untuk mengirim satu digit angka secara instan dengan sekali tekan.</li>
+  <li class="fade-in" style="animation-delay: 2.2s;"><h3>Kalkulator</h3>Gunakan kalkulator untuk melakukan perhitungan. Saat Anda menekan tombol <strong>=</strong>, hasilnya akan langsung dikirim ke partner Anda dan display kalkulator akan otomatis bersih.</li>
+</ul>
 
-    <h2>3. Halaman Receiver (Penerima)</h2>
-    <p>Halaman ini berfungsi sebagai "layar" Anda untuk menerima informasi dari Sender atau Tamu.</p>
-    <ul>
-        <li>
-            <h3>Penerimaan Real-time</h3>
-            Layar akan secara otomatis menampilkan data apa pun (teks, angka, atau hasil kalkulator) yang dikirimkan kepada Anda. Data yang masuk bersifat sesaat dan akan digantikan oleh data baru.
-        </li>
-        <li>
-            <h3>Text-to-Speech (TTS)</h3>
-            Secara default, suara akan <strong>aktif</strong> dan membacakan data yang masuk dalam Bahasa Indonesia. Anda bisa menekan tombol ikon <strong>speaker</strong> di bawah teks untuk mengontrolnya:
-            <br>- Tekan sekali untuk mematikan suara (Anda akan mendengar notifikasi "Voice Off").
-            <br>- Tekan lagi untuk mengaktifkannya kembali (Anda akan mendengar notifikasi "Voice On").
-        </li>
-        <li>
-            <h3>Tombol Clear Display</h3>
-            Gunakan tombol ini di pojok kanan atas untuk membersihkan layar secara manual jika diperlukan.
-        </li>
-    </ul>
+<h2 class="fade-in" style="animation-delay: 2.4s;">3. Halaman Receiver (Penerima)</h2>
+<p class="fade-in" style="animation-delay: 2.6s;">Halaman ini berfungsi sebagai "layar" Anda untuk menerima informasi dari Sender atau Tamu.</p>
+<ul>
+  <li class="fade-in" style="animation-delay: 2.8s;"><h3>Penerimaan Real-time</h3>Layar akan secara otomatis menampilkan data yang dikirim. Data baru akan menggantikan yang lama.</li>
+  <li class="fade-in" style="animation-delay: 3s;"><h3>Text-to-Speech (TTS)</h3>Secara default, suara akan aktif. Gunakan tombol speaker untuk mengaktifkan atau mematikan suara.</li>
+  <li class="fade-in" style="animation-delay: 3.2s;"><h3>Tombol Clear Display</h3>Gunakan tombol ini di pojok kanan atas untuk membersihkan layar secara manual.</li>
+</ul>
 
-    <h2>4. Fitur Lanjutan: Link Tamu</h2>
-    <p>Fitur ini memungkinkan Anda menerima data dari seseorang yang tidak memiliki aplikasi ini.</p>
-    <ul>
-      <li>Di <strong>Menu Utama</strong>, tekan tombol "Buat Link Tamu".</li>
-      <li>Sebuah kotak dialog akan muncul. Tekan <strong>"Salin"</strong> atau <strong>"Bagikan"</strong> untuk memberikan link unik tersebut kepada tamu Anda.</li>
-      <li>Link ini hanya bisa digunakan <strong>SATU KALI</strong>. Saat tamu terhubung, status di Menu Utama Anda akan menjadi <strong>"Tamu Terhubung"</strong>.</li>
-    </ul>
+<h2 class="fade-in" style="animation-delay: 3.4s;">4. Fitur Lanjutan: Link Tamu</h2>
+<p class="fade-in" style="animation-delay: 3.6s;">Fitur ini memungkinkan Anda menerima data dari seseorang yang tidak memiliki aplikasi ini.</p>
+<ul>
+  <li class="fade-in" style="animation-delay: 3.8s;">Di <strong>Menu Utama</strong>, tekan tombol "Buat Link Tamu".</li>
+  <li class="fade-in" style="animation-delay: 4s;">Sebuah kotak dialog akan muncul. Tekan <strong>"Salin"</strong> atau <strong>"Bagikan"</strong> untuk memberikan link tersebut.</li>
+  <li class="fade-in" style="animation-delay: 4.2s;">Link hanya bisa digunakan <strong>sekali</strong>. Setelah tamu terhubung, status akan berubah menjadi "Tamu Terhubung".</li>
+</ul>
+
+<h2 class="fade-in" style="animation-delay: 4.4s;">5. Custom Thump Preset</h2>
+<p class="fade-in" style="animation-delay: 4.6s;">Anda dapat membuat tombol-tombol cepat dengan isi pesan yang bisa disesuaikan.</p>
+<ul>
+  <li class="fade-in" style="animation-delay: 4.8s;">Buka halaman <strong>Atur Koneksi</strong> (api.html)</li>
+  <li class="fade-in" style="animation-delay: 5s;">Gulir ke bagian <strong>Custom Thump</strong></li>
+  <li class="fade-in" style="animation-delay: 5.2s;">Masukkan kata atau frasa yang ingin dijadikan tombol, pisahkan dengan koma (Contoh: <code>Merah, Tengah, 2 Kartu</code>)</li>
+  <li class="fade-in" style="animation-delay: 5.4s;">Tekan tombol <strong>Simpan Preset</strong></li>
+  <li class="fade-in" style="animation-delay: 5.6s;">Tombol preset akan muncul di halaman <strong>Sender</strong></li>
+  <li class="fade-in" style="animation-delay: 5.8s;">Tekan <strong>Hapus Preset</strong> untuk menghapus semua</li>
+</ul>
+
+<h2 class="fade-in" style="animation-delay: 6s;">6. Force Refresh</h2>
+<p class="fade-in" style="animation-delay: 6.2s;">Digunakan saat aplikasi tidak memperbarui meskipun sudah ada versi baru.</p>
+<ul>
+  <li class="fade-in" style="animation-delay: 6.4s;">Buka halaman <strong>Instruksi</strong></li>
+  <li class="fade-in" style="animation-delay: 6.6s;">Scroll ke bawah dan tekan tombol <strong>Force Refresh</strong></li>
+  <li class="fade-in" style="animation-delay: 6.8s;">Cache lama akan dihapus, dan halaman dimuat ulang</li>
+  <li class="fade-in" style="animation-delay: 7s;">Fitur ini <strong>tidak menghapus</strong> data penting seperti kode koneksi atau preset</li>
+</ul>
+
+<h2 class="fade-in" style="animation-delay: 7.2s;">7. Kalkulator & Kode Kartu</h2>
+<p class="fade-in" style="animation-delay: 7.4s;">Kalkulator di halaman Sender dapat mengirim hasil hitung atau kode kartu berdasarkan sistem Mnemonica Stack.</p>
+<ul>
+  <li class="fade-in" style="animation-delay: 7.6s;">Masukkan angka antara <strong>1–52</strong> ke kalkulator</li>
+  <li class="fade-in" style="animation-delay: 7.8s;">Tekan tombol <strong>=</strong></li>
+  <li class="fade-in" style="animation-delay: 8s;">Contoh: <code>17</code> → <strong>9 Hati</strong></li>
+  <li class="fade-in" style="animation-delay: 8.2s;">Pesan akan dikirim sebagai teks ke receiver</li>
+  <li class="fade-in" style="animation-delay: 8.4s;">Jika yang dimasukkan berupa kalkulasi (misalnya <code>5+7</code>), hasil hitungnya akan dikirim</li>
+</ul>
+
+
     
     <a href="main.html" class="back-button">Kembali ke Menu Utama</a>
-    <button id="forceRefreshBtn" style="display:block;margin:20px auto 0 auto;padding:10px 20px;background:#333;color:#fff;border:none;border-radius:8px;cursor:pointer">Force Refresh</button>
-
+    
 
     <div class="credit">
       <p>Conceptor: @pesulapgabut</p>
