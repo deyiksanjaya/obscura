@@ -2,6 +2,16 @@
 <html lang="id">
 <head>
   <link rel="manifest" href="manifest.webmanifest">
+   <!-- Anda bisa menaruh skripnya di sini -->
+  <script type="text/javascript">
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
