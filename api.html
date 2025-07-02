@@ -1,146 +1,100 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <!-- 1. SATPAM KEAMANAN -->
   <script src="auth-guard.js"></script>
+
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#111111">
+  <!-- 2. THEME COLOR DIPERBARUI -->
+  <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Obscura - Main Menu</title>
+  <title>OBSCURA - Pengaturan</title>
   <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { 
-        height: 100%; 
-        background: radial-gradient(ellipse at center, #111 0%, #000 100%); 
-        font-family: 'Cardo', serif; 
-        color: #e0e0e0; 
-        animation: fadeIn 1.2s ease forwards; 
-        opacity: 0; 
-        overflow: hidden;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Cardo', serif;
+      background: radial-gradient(ellipse at center, #111 0%, #000 100%);
+      color: #e0e0e0;
     }
-    @keyframes fadeIn { to { opacity: 1; } }
-    body { 
-        display: flex; 
-        flex-direction: column; 
+    section {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    
-    .scroll-container { 
-        flex: 1;
-        overflow-y: auto;
-        padding: 40px 0;
+    input, button {
+      width: 100%;
+      box-sizing: border-box;
+      font-family: 'Cardo', serif;
+      padding: 10px;
+      margin-top: 8px;
+      background: #111;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      border-radius: 5px;
+      display: block;
     }
-
-    .menu-column { 
-        display: flex; 
-        flex-direction: column; 
-        gap: 32px; 
-        align-items: center; 
-        width: 100%; 
-        position: relative; 
-        padding-bottom: 40px;
+    button {
+        cursor: pointer;
     }
-    .menu-item { width: 90vw; max-width: 300px; aspect-ratio: 1 / 1; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; background: rgba(255, 255, 255, 0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; text-align: center; text-decoration: none; color: inherit; position: relative; box-shadow: 0 0 10px rgba(255, 255, 255, 0.02); transform: translateY(30px); opacity: 0; animation: slideIn 0.6s ease forwards; }
-    .menu-item.disabled { opacity: 0.5 !important; cursor: not-allowed; background: rgba(255, 255, 255, 0.01); transform: scale(0.98); }
-    .menu-item.disabled:hover { transform: scale(0.98); box-shadow: 0 0 10px rgba(255, 255, 255, 0.02); }
-    
-    .menu-item:nth-child(1) { animation-delay: 0.4s; }
-    .menu-item:nth-child(2) { animation-delay: 0.6s; }
-    .menu-item:nth-child(3) { animation-delay: 0.8s; }
-    .menu-item:nth-child(4) { animation-delay: 1.0s; }
-
-    @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
-    .menu-item:not(.disabled):hover { background: rgba(255, 255, 255, 0.04); transform: scale(1.03); box-shadow: 0 0 12px rgba(255, 255, 255, 0.1); }
-    .menu-item svg { width: 48px; height: 48px; margin-bottom: 12px; fill: #ffffff; opacity: 0.8; }
-    .menu-item span { font-size: 16px; letter-spacing: 1px; }
-
-    .top-info {
-        position: absolute;
-        top: 10px;
-        left: 20px;
-        right: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 10;
-        pointer-events: none;
+    button:hover {
+        background-color: #222;
     }
-    #userCodeDisplay, #connectionInfo {
-        color: #999;
-        font-size: 12px;
-        background: rgba(255,255,255,0.05);
-        padding: 5px 10px;
-        border-radius: 8px;
-        opacity: 0;
-        animation: fadeIn 1s ease forwards;
-        animation-delay: 0.5s;
+    #popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px 30px;
+      border-radius: 12px;
+      font-family: 'Cardo', serif;
+      font-size: 18px;
+      color: #e0e0e0;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      text-align: center;
     }
-    #connectionInfo {
-        text-align: right;
-        /* Menghapus white-space: pre-line karena tidak ada lagi baris baru */
+    #popup.show {
+      opacity: 1;
+      pointer-events: auto;
     }
-
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-    .modal-overlay.visible { opacity: 1; pointer-events: auto; }
-    .modal-content { background: #1a1a1a; padding: 25px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; }
-    .modal-overlay.visible .modal-content { transform: scale(1); }
-    #requestMessage { margin: 0; margin-bottom: 20px; font-size: 18px; }
-    .modal-buttons { display: flex; gap: 15px; }
-    .modal-buttons button { flex: 1; padding: 10px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
-    #acceptBtn { background-color: #28a745; color: white; }
-    #acceptBtn:hover { background-color: #218838; }
-    #denyBtn { background-color: #dc3545; color: white; }
-    #denyBtn:hover { background-color: #c82333; }
   </style>
 </head>
 <body>
-  <div class="top-info">
-    <div id="userCodeDisplay"></div>
-    <div id="connectionInfo">Mengecek koneksi...</div>
-  </div>
+  <section>
+    <h2>ID Anda</h2>
+    <input type="text" id="uniqueCode" maxlength="6" placeholder="6 digit angka">
+    <div id="codeStatus">Masukkan 6 digit angka untuk ID Anda.</div>
+    <button id="resetCodeBtn" style="display:none; margin-top: 10px;">Ganti ID</button>
+  </section>
 
-  <div class="scroll-container">
-    <div class="menu-column">
-      <!-- Receiver -->
-      <a href="receiver.html" class="menu-item" id="receiver">
-        <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6zm0 2.2L18 9v10H6V9l6-3.8zM12 12a2 2 0 110 4 2 2 0 010-4z"/></svg>
-        <span>Receiver</span>
-      </a>
-      <!-- Sender -->
-      <a href="sender.html" class="menu-item" id="sender">
-        <svg viewBox="0 0 24 24"><path d="M2 3v18l20-9L2 3zm2.18 2.5L17 12 4.18 18.5V5.5z"/></svg>
-        <span>Sender</span>
-      </a>
-      <!-- Settings -->
-      <a href="api.html" class="menu-item">
-        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg>
-        <span>Settings</span>
-      </a>
-      <!-- Instructions Button -->
-      <a href="instructions.html" class="menu-item">
-        <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-        </svg>
-        <span>Instructions</span>
-      </a>
-    </div>
-  </div>
+  <section>
+    <h2>Partner</h2>
+    <input type="text" id="accompliceCode" placeholder="Masukkan ID partner">
+    <button id="linkBtn">Kirim Permintaan Koneksi</button>
+    <button id="disconnectBtn" style="margin-top: 10px; background-color: #521818;">Putuskan Sambungan</button>
+  </section>
 
-  <div id="requestModal" class="modal-overlay">
-    <div class="modal-content">
-      <p id="requestMessage">Pengguna ingin terkoneksi</p>
-      <div class="modal-buttons">
-        <button id="denyBtn">Tolak</button>
-        <button id="acceptBtn">Izinkan</button>
-      </div>
-    </div>
-  </div>
-  
+  <section>
+    <a href="main.html" style="text-decoration: none;"><button type="button">Kembali ke Menu</button></a>
+    <button id="clearDataBtn" style="margin-top: 12px; background-color: #400; color: #f44336;">Hapus Semua Jejak</button>
+  </section>
+
+  <div id="popup"></div>
+
   <script type="module">
+    // 3. KONFIGURASI FIREBASE LANGSUNG DI SINI
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -151,105 +105,150 @@
       messagingSenderId: "866868400960",
       appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
     };
-
-    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+    
+    const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const info = document.getElementById('connectionInfo');
-    const userCodeDisplay = document.getElementById('userCodeDisplay');
-    const receiverLink = document.getElementById('receiver');
-    const senderLink = document.getElementById('sender');
-    const requestModal = document.getElementById('requestModal');
-    const requestMessage = document.getElementById('requestMessage');
-    const acceptBtn = document.getElementById('acceptBtn');
-    const denyBtn = document.getElementById('denyBtn');
 
-    function updateUserCodeDisplay() {
+    const codeInput = document.getElementById('uniqueCode');
+    const status = document.getElementById('codeStatus');
+    const resetBtn = document.getElementById('resetCodeBtn');
+    const accompliceInput = document.getElementById('accompliceCode');
+    const linkBtn = document.getElementById('linkBtn');
+    const clearDataBtn = document.getElementById('clearDataBtn');
+    const popup = document.getElementById('popup');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    let knownPartnerCode = localStorage.getItem('accompliceCode') || null;
+
+    function showPopup(text, duration = 2500) {
+      popup.textContent = text;
+      popup.classList.add("show");
+      setTimeout(() => popup.classList.remove("show"), duration);
+    }
+    
+    function initializePage() {
         const myCode = localStorage.getItem('myCode');
+        disconnectBtn.style.display = 'none';
+
         if (myCode) {
-            // PERUBAHAN 1: Mengganti "Kode Anda" dengan "ID :"
-            userCodeDisplay.textContent = `ID : ${myCode}`;
+            codeInput.value = myCode;
+            codeInput.disabled = true;
+            status.textContent = "ID ini sudah digunakan oleh Anda.";
+            status.style.color = "#4caf50";
+            resetBtn.style.display = 'block';
+
+            const connRef = ref(db, `connections/${myCode}/partner`);
+            onValue(connRef, (snap) => {
+                const newPartnerCode = snap.val();
+                
+                if (newPartnerCode && newPartnerCode !== knownPartnerCode) {
+                    showPopup(`Anda kini tersambung dengan: ${newPartnerCode}`);
+                }
+                
+                if (newPartnerCode) {
+                    accompliceInput.value = newPartnerCode;
+                    localStorage.setItem('accompliceCode', newPartnerCode);
+                    disconnectBtn.style.display = 'block';
+                } else {
+                    accompliceInput.value = '';
+                    localStorage.removeItem('accompliceCode');
+                    disconnectBtn.style.display = 'none';
+                }
+                
+                knownPartnerCode = newPartnerCode;
+            });
         } else {
-            userCodeDisplay.textContent = 'ID Belum Diatur';
+            codeInput.addEventListener('input', handleNewCodeInput);
         }
     }
+    
+    linkBtn.addEventListener('click', async () => {
+      const myCode = localStorage.getItem('myCode');
+      const accompliceCode = accompliceInput.value.trim();
 
-    function setMenuState(enabled, partnerCode = null) {
-        if (enabled && partnerCode) {
-            info.style.color = '#4caf50';
-            // PERUBAHAN 2: Hanya menampilkan kode partner
-            info.textContent = partnerCode;
-            receiverLink.classList.remove('disabled');
-            senderLink.classList.remove('disabled');
-            receiverLink.setAttribute('href', 'receiver.html');
-            senderLink.setAttribute('href', 'sender.html');
-        } else {
-            info.style.color = '#999';
-            info.textContent = localStorage.getItem('myCode') ? `Tidak Tersambung` : 'ID Belum Diatur';
-            receiverLink.classList.add('disabled');
-            senderLink.classList.add('disabled');
-            receiverLink.removeAttribute('href');
-            senderLink.removeAttribute('href');
-        }
-    }
+      if (!myCode) { showPopup('Anda harus mengatur ID Anda terlebih dahulu!'); return; }
+      if (!/^\d{6}$/.test(accompliceCode)) { showPopup('ID partner harus 6 digit angka!'); return; }
+      if (myCode === accompliceCode) { showPopup('Anda tidak bisa terhubung dengan diri sendiri.'); return; }
+      
+      const accompliceUserRef = ref(db, `users/${accompliceCode}`);
+      const snap = await get(accompliceUserRef);
+      if (!snap.exists()) { showPopup(`ID partner ${accompliceCode} tidak ditemukan.`); return; }
 
-    function hideRequestModal() {
-        requestModal.classList.remove('visible');
-    }
+      const targetConnRef = ref(db, `connections/${accompliceCode}`);
+      const targetConnSnap = await get(targetConnRef);
+      if (targetConnSnap.exists()) {
+          showPopup(`User ${accompliceCode} sedang sibuk atau sudah terhubung.`);
+          return;
+      }
+      
+      await set(ref(db, `connections/${accompliceCode}/requestFrom`), myCode);
+      
+      showPopup(`Permintaan koneksi terkirim ke ${accompliceCode}.`);
+    });
 
-    function showRequestModal(requesterCode) {
+    disconnectBtn.addEventListener('click', async () => {
         const myCode = localStorage.getItem('myCode');
-        requestMessage.textContent = `Pengguna ${requesterCode} ingin terkoneksi`;
-        requestModal.classList.add('visible');
+        const accompliceCode = localStorage.getItem('accompliceCode');
 
-        acceptBtn.onclick = async () => {
-            if (!myCode || !requesterCode) return;
-            await set(ref(db, `connections/${myCode}/partner`), requesterCode);
-            await set(ref(db, `connections/${requesterCode}/partner`), myCode);
-            await remove(ref(db, `connections/${myCode}/requestFrom`));
-            hideRequestModal();
-        };
+        if (!myCode || !accompliceCode) { showPopup("Anda sedang tidak terhubung dengan siapapun."); return; }
 
-        denyBtn.onclick = async () => {
-            await remove(ref(db, `connections/${myCode}/requestFrom`));
-            hideRequestModal();
-        };
-    }
-
-    updateUserCodeDisplay();
-
-    window.addEventListener('storage', (event) => {
-        if (event.key === 'myCode') {
-            updateUserCodeDisplay();
+        if (confirm(`Anda yakin ingin memutuskan sambungan dengan ${accompliceCode}?`)) {
+            try {
+                await remove(ref(db, `connections/${myCode}`));
+                await remove(ref(db, `connections/${accompliceCode}`));
+                localStorage.removeItem('accompliceCode');
+                showPopup("Sambungan telah diputuskan.");
+                accompliceInput.value = '';
+                disconnectBtn.style.display = 'none';
+            } catch (err) {
+                console.error("Gagal memutuskan koneksi:", err);
+                showPopup("Terjadi error saat mencoba memutuskan koneksi.");
+            }
         }
     });
 
-    const myCode = localStorage.getItem('myCode');
-    if (myCode) {
-      const requestRef = ref(db, `connections/${myCode}/requestFrom`);
-      onValue(requestRef, (snap) => {
-          const requesterCode = snap.val();
-          if (requesterCode) {
-              if (!localStorage.getItem('accompliceCode')) {
-                  showRequestModal(requesterCode);
-              }
-          }
-      });
-
-      const partnerRef = ref(db, `connections/${myCode}/partner`);
-      onValue(partnerRef, (snap) => {
-        const partnerCode = snap.val();
-        setMenuState(!!partnerCode, partnerCode);
-        if (partnerCode) {
-          localStorage.setItem('accompliceCode', partnerCode);
-        } else {
-          localStorage.removeItem('accompliceCode');
+    async function handleNewCodeInput(e) {
+        const code = e.target.value.trim();
+        if (!/^\d{6}$/.test(code)) { status.textContent = "ID harus terdiri dari 6 digit angka."; status.style.color = "#f44336"; return; }
+        const userRef = ref(db, `users/${code}`);
+        const snap = await get(userRef);
+        if (snap.exists()) { status.textContent = "ID ini sudah digunakan oleh orang lain."; status.style.color = "#f44336"; } else {
+            await set(userRef, { createdAt: Date.now() });
+            localStorage.setItem('myCode', code);
+            status.textContent = "ID tersedia dan telah disimpan."; status.style.color = "#4caf50";
+            codeInput.disabled = true; resetBtn.style.display = 'block';
+            codeInput.removeEventListener('input', handleNewCodeInput);
         }
-      });
-
-    } else {
-      setMenuState(false);
     }
+
+    resetBtn.addEventListener('click', async () => { if (confirm("Anda yakin ingin mengganti ID? Ini akan memutuskan koneksi yang ada.")) { await clearAllData(); location.reload(); } });
+    
+    clearDataBtn.onclick = async () => {
+        if (confirm("TINDAKAN PERMANEN! Ini akan menghapus ID Anda, koneksi, dan semua data dari cloud dan perangkat ini. Lanjutkan?")) {
+            await clearAllData();
+            showPopup("Semua jejak telah dihapus.");
+            setTimeout(() => {
+                codeInput.disabled = false; codeInput.value = ''; accompliceInput.value = '';
+                status.textContent = 'Masukkan 6 digit angka untuk ID Anda.'; status.style.color = '#e0e0e0';
+                resetBtn.style.display = 'none'; codeInput.addEventListener('input', handleNewCodeInput);
+            }, 2000);
+        }
+    };
+
+    async function clearAllData() {
+        const myCode = localStorage.getItem('myCode'); const accompliceCode = localStorage.getItem('accompliceCode');
+        try {
+            if (myCode) {
+                if (accompliceCode) { await remove(ref(db, `connections/${accompliceCode}`)); }
+                await remove(ref(db, `users/${myCode}`));
+                await remove(ref(db, `connections/${myCode}`));
+                await remove(ref(db, `data/${myCode}`));
+                await remove(ref(db, `status/${myCode}`));
+            }
+        } catch (err) { console.error("Gagal menghapus data Firebase:", err); showPopup("Error saat menghapus data di cloud.");
+        } finally { localStorage.clear(); }
+    }
+    
+    initializePage();
   </script>
 </body>
 </html>
