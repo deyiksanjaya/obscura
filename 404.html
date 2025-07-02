@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Obscura - Redirecting...</title>
+  <script type="text/javascript">
+    // Dapatkan path halaman yang coba diakses
+    var path = window.location.pathname;
+    
+    // Simpan parameter query (seperti ?token=...)
+    var params = window.location.search;
+
+    // Simpan path yang asli di sessionStorage agar bisa diakses nanti
+    sessionStorage.redirect = path + params;
+
+    // Arahkan kembali ke halaman utama (index.html)
+    window.location.replace(
+      window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '')
+    );
+  </script>
+</head>
+<body>
+</body>
+</html>
