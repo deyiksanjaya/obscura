@@ -190,10 +190,32 @@
     </ul>
     
     <a href="main.html" class="back-button">Kembali ke Menu Utama</a>
+    <button id="forceRefreshBtn" style="display:block;margin:20px auto 0 auto;padding:10px 20px;background:#333;color:#fff;border:none;border-radius:8px;cursor:pointer">Force Refresh</button>
+
 
     <div class="credit">
       <p>Conceptor: @pesulapgabut</p>
     </div>
   </div>
+  <script>
+    const forceRefreshBtn = document.getElementById("forceRefreshBtn");
+    forceRefreshBtn.addEventListener("click", async () => {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          await reg.unregister();
+        }
+      }
+
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const name of cacheNames) {
+          await caches.delete(name);
+        }
+      }
+
+      window.location.reload(true);
+    });
+  </script>
 </body>
 </html>
