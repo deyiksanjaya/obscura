@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <!-- 1. SATPAM KEAMANAN -->
+  <!-- SATPAM KEAMANAN -->
   <script src="auth-guard.js"></script>
 
   <link rel="manifest" href="manifest.webmanifest">
-  <!-- 2. THEME COLOR DIPERBARUI -->
+  <!-- THEME COLOR DIPERBARUI -->
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -64,19 +64,17 @@
 </head>
 <body>
   <div id="content-wrapper">
-    <div class="breathing" id="mainText">Menunggu Kode dari Sender</div>
+    <div class="breathing" id="mainText">Menunggu Data...</div>
     <button id="ttsButton" title="Aktifkan/Nonaktifkan Suara"></button>
   </div>
-
   <div id="popup" class="popup"></div>
   
   <a href="main.html" id="backButton" class="top-button">← Kembali</a>
   <button id="clearButton" class="top-button">Clear Display</button>
 
   <script type="module">
-    // --- PERBAIKAN 1: HANYA SATU BLOK IMPORT DI SINI ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -93,7 +91,6 @@
 
     const myCode = localStorage.getItem('myCode');
     const accompliceCode = localStorage.getItem('accompliceCode');
-
     const popup = document.getElementById("popup");
     const textDisplay = document.getElementById("mainText");
     const clearButton = document.getElementById("clearButton");
@@ -102,26 +99,80 @@
     let isTtsEnabled;
     const speakerOnIcon = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
     const speakerOffIcon = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L7 9.02v.02L12 4z"/></svg>`;
-
     let indonesianVoice = null;
+
+    if (!myCode || !accompliceCode) {
+      alert("Tidak ada sesi aktif. Kembali ke menu utama.");
+      window.location.replace('main.html');
+      throw new Error("Redirecting due to no active session.");
+    }
+    
+    const myStatusRef = ref(db, `status/${myCode}`);
+    const dataRef = ref(db, `data/${myCode}`);
+    let dataListener = null;
+
+    if (accompliceCode && accompliceCode !== 'GUEST') {
+        const partnerStatusRef = ref(db, `status/${accompliceCode}`);
+        onValue(partnerStatusRef, (snap) => {
+            const partnerStatus = snap.val();
+            if (partnerStatus === 'receiver') {
+                alert("Konflik: Partner Anda juga membuka halaman Receiver. Kembali ke menu...");
+                window.location.replace('main.html');
+            } else if (partnerStatus !== 'sender' && dataListener) {
+                textDisplay.textContent = "Koneksi dengan Partner terputus...";
+                textDisplay.className = "breathing";
+            }
+        });
+    } else if (accompliceCode === 'GUEST') {
+        const guestConnectionRef = ref(db, `guestConnections/${myCode}`);
+        onValue(guestConnectionRef, (snap) => {
+            if (!snap.exists()) {
+                textDisplay.textContent = "Koneksi dengan Tamu terputus...";
+                textDisplay.className = "breathing";
+            }
+        });
+    }
+    
+    onDisconnect(myStatusRef).remove();
+    set(myStatusRef, 'receiver').then(() => {
+        console.log("Status diatur sebagai 'receiver'. Mulai mendengarkan data.");
+        startDataListener();
+    }).catch(err => {
+        alert("Gagal memulai sesi receiver. Silakan coba lagi.");
+        window.location.replace('main.html');
+    });
+
+    function startDataListener() {
+      dataListener = onValue(dataRef, (snap) => {
+        const val = snap.val();
+        if (val) {
+          const text = val.text ?? "";
+          const number = val.number ?? "";
+          const calc = val.calc ?? "";
+          const combined = [text, number, calc].filter(Boolean).join(" • ");
+          if (combined) {
+            textDisplay.textContent = combined;
+            textDisplay.className = "active-text";
+            speak(combined);
+          }
+          remove(dataRef).catch(err => console.error("Gagal menghapus data:", err));
+        }
+      });
+    }
 
     function loadIndonesianVoice() {
         const voices = speechSynthesis.getVoices();
         indonesianVoice = voices.find(voice => voice.lang === 'id-ID');
-        if (indonesianVoice) {
-            console.log("Suara Bahasa Indonesia ditemukan:", indonesianVoice.name);
-        } else {
-            console.warn("Tidak ada suara Bahasa Indonesia di perangkat ini. Menggunakan suara default.");
-        }
+        if (indonesianVoice) { console.log("Suara Bahasa Indonesia ditemukan:", indonesianVoice.name); } 
+        else { console.warn("Tidak ada suara Bahasa Indonesia di perangkat ini. Menggunakan suara default."); }
     }
     speechSynthesis.onvoiceschanged = loadIndonesianVoice;
     loadIndonesianVoice();
 
-    // --- PERBAIKAN 2: TTS AKTIF SECARA DEFAULT ---
     function initializeTtsState() {
-        const savedState = localStorage.getItem('ttsEnabled');
-        // Default ke ON (true) jika tidak ada setting atau jika setting bukan 'false'
-        isTtsEnabled = savedState !== 'false';
+        // --- PERUBAHAN UTAMA DI SINI ---
+        // Selalu atur TTS ke OFF saat halaman dimulai, mengabaikan localStorage.
+        isTtsEnabled = false;
         updateTtsButton();
     }
 
@@ -146,6 +197,8 @@
 
     ttsButton.addEventListener('click', () => {
         isTtsEnabled = !isTtsEnabled;
+        // Kita tetap simpan ke localStorage agar statusnya bertahan jika pengguna
+        // tidak me-reload halaman, tapi akan selalu reset ke OFF saat dibuka kembali.
         localStorage.setItem('ttsEnabled', isTtsEnabled);
         updateTtsButton();
         speakTtsStatus();
@@ -165,70 +218,10 @@
       speechSynthesis.speak(utterance);
     }
 
-    function showPopup(message, duration = 2500, redirect = false) {
-      popup.textContent = message;
-      popup.classList.add("show");
-      setTimeout(() => {
-        if (redirect) {
-          window.location.href = "main.html";
-        } else {
-          popup.classList.remove("show");
-        }
-      }, duration);
-    }
-
-    if (!myCode || !accompliceCode) {
-      showPopup("Koneksi tidak ditemukan. Kembali ke menu utama...", 2500, true);
-      throw new Error("Redirecting due to no connection.");
-    }
-    
-    const myStatusRef = ref(db, `status/${myCode}`);
-    const partnerStatusRef = ref(db, `status/${accompliceCode}`);
-    const dataRef = ref(db, `data/${myCode}`);
-    let dataListener = null;
-    
-    const partnerStatusListener = onValue(partnerStatusRef, (snap) => {
-        const partnerStatus = snap.val();
-        if (partnerStatus === 'receiver') {
-            showPopup("Konflik: Pasangan Anda juga membuka halaman Receiver. Kembali ke menu...", 3000, true);
-            remove(myStatusRef);
-        } else if (partnerStatus !== 'sender' && dataListener) {
-            textDisplay.textContent = "Koneksi dengan Sender terputus...";
-            textDisplay.className = "breathing";
-        }
-    });
-
-    onDisconnect(myStatusRef).remove();
-    set(myStatusRef, 'receiver').then(() => {
-        console.log("Status diatur sebagai 'receiver'. Mulai mendengarkan data.");
-        startDataListener();
-    }).catch(err => {
-        console.error("Gagal mengatur status receiver:", err);
-        showPopup("Gagal memulai sesi receiver. Silakan coba lagi.", 2500, true);
-    });
-
-    function startDataListener() {
-      dataListener = onValue(dataRef, (snap) => {
-        const val = snap.val();
-        if (val) {
-          const text = val.text ?? "";
-          const number = val.number ?? "";
-          const calc = val.calc ?? "";
-          const combined = [text, number, calc].filter(Boolean).join(" • ");
-          if (combined) {
-            textDisplay.textContent = combined;
-            textDisplay.className = "active-text";
-            speak(combined);
-          }
-          remove(dataRef).catch(err => console.error("Gagal menghapus data:", err));
-        }
-      });
-    }
-
     clearButton.onclick = () => {
       remove(dataRef).then(() => {
         console.log("Data dihapus secara manual.");
-        textDisplay.textContent = "Menunggu Kode dari Sender";
+        textDisplay.textContent = "Menunggu Data...";
         textDisplay.className = "breathing";
       }).catch((err) => {
         console.error("Gagal menghapus data:", err);
@@ -238,7 +231,6 @@
     window.addEventListener('beforeunload', () => { remove(myStatusRef); });
     
     initializeTtsState();
-
   </script>
 </body>
 </html>
