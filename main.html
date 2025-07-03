@@ -51,6 +51,8 @@
     .menu-item:nth-child(3) { animation-delay: 0.8s; }
     .menu-item:nth-child(4) { animation-delay: 1.0s; }
     .menu-item:nth-child(5) { animation-delay: 1.2s; }
+    .menu-item:nth-child(6) { animation-delay: 1.4s; }
+
 
     @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
     .menu-item:not(.disabled):hover { background: rgba(255, 255, 255, 0.04); transform: scale(1.03); box-shadow: 0 0 12px rgba(255, 255, 255, 0.1); }
@@ -93,19 +95,25 @@
     </a>
     
     <a href="api.html" class="menu-item">
-  <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg>
-  <span>Settings</span>
-</a>
-
-    
-    <a href="#" class="menu-item" id="guestLinkBtn">
-      <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
-      <span>Buat Link Tamu</span>
+      <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg>
+      <span>Settings</span>
     </a>
+    
     <a href="instructions.html" class="menu-item">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
       <span>Instructions</span>
     </a>
+
+    <a href="#" class="menu-item" id="guestLinkBtn">
+      <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+      <span>Buat Link Tamu</span>
+    </a>
+
+    <a href="#" class="menu-item" id="disconnectGuestBtn" style="display: none; background-color: #4a2525;">
+      <svg viewBox="0 0 24 24"><path d="M16 8v3l4-4-4-4v3H8v2h8zM8 16v-3l-4 4 4 4v-3h8v-2H8z"/></svg>
+      <span>Putuskan Tamu</span>
+    </a>
+
   </div>
 </div>
 
@@ -132,8 +140,9 @@
   </div>
   
   <script type="module">
+    // PERBAIKAN: Menambahkan fungsi-fungsi yang dibutuhkan untuk query
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -149,6 +158,7 @@
     const db = getDatabase(app);
 
     const guestLinkBtn = document.getElementById('guestLinkBtn');
+    const disconnectGuestBtn = document.getElementById('disconnectGuestBtn'); // Tombol baru
     const info = document.getElementById('connectionInfo');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const receiverLink = document.getElementById('receiver');
@@ -166,27 +176,28 @@
 
     function setMenuState(connectionType, partnerCode = null) {
       currentConnectionType = connectionType;
+      // Sembunyikan semua tombol menu khusus koneksi secara default
+      disconnectGuestBtn.style.display = 'none';
+      guestLinkBtn.style.display = 'flex'; // Tampilkan tombol link tamu secara default
+
       if (connectionType === 'partner') {
         info.style.color = '#4caf50';
         info.textContent = partnerCode;
         receiverLink.classList.remove('disabled');
         senderLink.classList.remove('disabled');
-        receiverLink.setAttribute('href', 'receiver.html');
-        senderLink.setAttribute('href', 'sender.html');
+        guestLinkBtn.style.display = 'none'; // Sembunyikan saat terhubung dgn partner
       } else if (connectionType === 'guest') {
         info.style.color = '#4caf50';
         info.textContent = "Tamu Terhubung";
         receiverLink.classList.remove('disabled');
-        receiverLink.setAttribute('href', 'receiver.html');
         senderLink.classList.add('disabled');
-        senderLink.removeAttribute('href');
-      } else {
+        guestLinkBtn.style.display = 'none'; // Sembunyikan saat tamu terhubung
+        disconnectGuestBtn.style.display = 'flex'; // Tampilkan tombol putuskan tamu
+      } else { // Tidak terhubung
         info.style.color = '#999';
         info.textContent = localStorage.getItem('myCode') ? `Tidak Tersambung` : 'ID Belum Diatur';
         receiverLink.classList.add('disabled');
         senderLink.classList.add('disabled');
-        receiverLink.removeAttribute('href');
-        senderLink.removeAttribute('href');
       }
     }
 
@@ -196,37 +207,36 @@
 
         const myCode = localStorage.getItem('myCode');
         if (myCode) {
+            // Listener untuk permintaan koneksi partner
             const requestRef = ref(db, `connections/${myCode}/requestFrom`);
             onValue(requestRef, (snap) => {
                 const requesterCode = snap.val();
                 if (requesterCode && !currentConnectionType) { showRequestModal(requesterCode); }
             });
 
+            // Listener untuk koneksi partner yang sudah aktif
             const partnerRef = ref(db, `connections/${myCode}/partner`);
             onValue(partnerRef, (snap) => {
                 const partnerCode = snap.val();
                 if (partnerCode) {
                     localStorage.setItem('accompliceCode', partnerCode);
                     setMenuState('partner', partnerCode);
-                } else {
-                    if (localStorage.getItem('accompliceCode') !== 'GUEST') {
-                        localStorage.removeItem('accompliceCode');
-                    }
-                    if (currentConnectionType === 'partner') { setMenuState(null); }
+                } else if (currentConnectionType === 'partner') {
+                    localStorage.removeItem('accompliceCode');
+                    setMenuState(null);
                 }
             });
 
+            // Listener untuk koneksi tamu
             const guestRef = ref(db, `guestConnections/${myCode}`);
             onValue(guestRef, (snap) => {
-                if (!localStorage.getItem('accompliceCode') || localStorage.getItem('accompliceCode') === 'GUEST') {
+                if (currentConnectionType !== 'partner') {
                     if (snap.exists()) {
                         localStorage.setItem('accompliceCode', 'GUEST');
                         setMenuState('guest');
-                    } else {
-                        if (currentConnectionType === 'guest') {
-                            localStorage.removeItem('accompliceCode');
-                            setMenuState(null);
-                        }
+                    } else if (currentConnectionType === 'guest') {
+                        localStorage.removeItem('accompliceCode');
+                        setMenuState(null);
                     }
                 }
             });
@@ -245,24 +255,37 @@
         }, 3000);
     }
 
-    function copyToClipboard(text) {
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
+    // PERBAIKAN: Menggunakan API Clipboard modern
+    async function copyToClipboard(text) {
+        if (!navigator.clipboard) {
+            // Fallback untuk browser sangat lama
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Link Tamu telah disalin!");
+            } catch (err) {
+                console.error('Gagal menyalin link (fallback): ', err);
+                showToast("Gagal menyalin link.");
+            }
+            document.body.removeChild(textArea);
+            return;
+        }
         try {
-            document.execCommand('copy');
+            await navigator.clipboard.writeText(text);
             showToast("Link Tamu telah disalin!");
         } catch (err) {
             console.error('Gagal menyalin link: ', err);
             showToast("Gagal menyalin link.");
         }
-        document.body.removeChild(textArea);
     }
 
+    // PERBAIKAN: Membersihkan token lama sebelum membuat yang baru
     guestLinkBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         const myCode = localStorage.getItem('myCode');
@@ -270,11 +293,35 @@
             alert("Anda harus memiliki ID terlebih dahulu. Atur di halaman Settings.");
             return;
         }
-        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase();
+
+        try {
+            const tokensRef = ref(db, 'guestTokens');
+            const userTokensQuery = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
+            const snapshot = await get(userTokensQuery);
+            if (snapshot.exists()) {
+                const cleanupPromises = [];
+                snapshot.forEach((child) => { cleanupPromises.push(remove(child.ref)); });
+                await Promise.all(cleanupPromises);
+            }
+        } catch (error) {
+            console.error("Gagal membersihkan token lama:", error);
+        }
+
+        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
         const guestTokenRef = ref(db, `guestTokens/${token}`);
         await set(guestTokenRef, { hostId: myCode, createdAt: Date.now() });
         const guestUrl = `${window.location.origin}${window.location.pathname.replace('main.html', '')}guest.html?token=${token}`;
         showShareModal(guestUrl);
+    });
+
+    // FUNGSI BARU: Untuk tombol putuskan tamu
+    disconnectGuestBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const myCode = localStorage.getItem('myCode');
+        if(myCode) {
+            const guestConnectionRef = ref(db, `guestConnections/${myCode}`);
+            remove(guestConnectionRef);
+        }
     });
 
     function updateUserCodeDisplay() {
@@ -330,7 +377,7 @@
                 console.error('Gagal berbagi:', err);
             }
         } else {
-            copyToClipboard(linkToShare);
+            await copyToClipboard(linkToShare);
             showToast("Fitur Bagikan tidak didukung, link telah disalin.");
         }
     });
