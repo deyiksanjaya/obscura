@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buat Kode Authentication Baru - OBSCURA</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+      authDomain: "obscurabyheri.firebaseapp.com",
+      databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "obscurabyheri",
+      storageBucket: "obscurabyheri.appspot.com",
+      messagingSenderId: "866868400960",
+      appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cardo&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Cardo', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    .kode-box {
+      background-color: #111;
+      border: 1px solid #333;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 32px;
+      letter-spacing: 4px;
+      font-weight: bold;
+    }
+    button {
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .small-text {
+      font-size: 14px;
+      color: #aaa;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Buat Kode Authentication Baru</h1>
+  <p>Kode ini digunakan untuk aktivasi aplikasi OBSCURA</p>
+
+  <div id="kodeBaru" class="kode-box">------</div>
+
+  <button onclick="generateKode()">Buat Kode Baru</button>
+  <button onclick="salinKode()">Salin ke Clipboard</button>
+  <button onclick="bagikanKode()">Bagikan</button>
+
+  <p class="small-text" id="status"></p>
+
+ <script>
+  const db = firebase.database();
+  let currentCode = "";
+
+  function generateKode() {
+    document.getElementById("status").textContent = "Sedang mencari kode unik...";
+    cekKodeUnik();
+  }
+
+  function cekKodeUnik() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let rawCode = '';
+    for (let i = 0; i < 10; i++) {
+      rawCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const formattedCode = rawCode.slice(0, 5) + '-' + rawCode.slice(5);
+
+    firebase.database().ref("accessCodes/" + formattedCode).get().then(snapshot => {
+      if (!snapshot.exists()) {
+        firebase.database().ref("accessCodes/" + formattedCode).set({
+          createdAt: Date.now()
+        });
+      }
+
+      currentCode = formattedCode;
+      document.getElementById("kodeBaru").textContent = currentCode;
+      document.getElementById("status").textContent = "Kode tersedia. Anda dapat menyalin atau membagikannya.";
+    }).catch(error => {
+      console.error("Gagal cek kode:", error);
+      document.getElementById("status").textContent = "Terjadi kesalahan saat memeriksa kode.";
+    });
+  }
+
+  function salinKode() {
+    if (!currentCode) return alert("Buat dulu kodenya.");
+    navigator.clipboard.writeText(currentCode).then(() => {
+      document.getElementById("status").textContent = "Kode disalin ke clipboard.";
+    });
+  }
+
+  function bagikanKode() {
+    if (!currentCode) return alert("Buat dulu kodenya.");
+    if (navigator.share) {
+      navigator.share({
+        title: "Kode OBSCURA",
+        text: `Gunakan kode ini untuk aktivasi OBSCURA: ${currentCode}`
+      }).then(() => {
+        document.getElementById("status").textContent = "Kode berhasil dibagikan.";
+      }).catch(err => {
+        document.getElementById("status").textContent = "Gagal membagikan kode.";
+        console.error(err);
+      });
+    } else {
+      alert("Fitur bagikan tidak didukung di browser ini.");
+    }
+  }
+</script>
+
+</body>
+</html>
