@@ -1,4 +1,4 @@
-const CACHE_NAME = 'obscura-cache-v2'; // Naikkan versi cache
+const CACHE_NAME = 'obscura-cache-v1.1.0'; // Naikkan versi cache
 const urlsToCache = [
   '/',
   '/index.html',
