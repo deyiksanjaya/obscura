@@ -36,7 +36,9 @@
     <h2>Partner</h2>
     <input type="text" id="accompliceCode" placeholder="Masukkan ID partner">
     <button id="linkBtn">Kirim Permintaan Koneksi</button>
-    <button id="disconnectBtn" style="margin-top: 10px; background-color: #521818;">Putuskan Sambungan</button>
+    <div id="partnerStatus" class="status-text"></div>
+    <button id="cancelRequestBtn" style="display:none; margin-top: 10px; background-color: #555;">Batalkan Permintaan</button>
+    <button id="disconnectBtn" style="display:none; margin-top: 10px; background-color: #521818;">Putuskan Sambungan</button>
   </section>
 
   <section>
@@ -82,8 +84,9 @@
     const disconnectBtn = document.getElementById('disconnectBtn');
     const popup = document.getElementById('popup');
     const clearDataBtn = document.getElementById('clearDataBtn');
+    const partnerStatus = document.getElementById('partnerStatus');
+    const cancelRequestBtn = document.getElementById('cancelRequestBtn');
     
-    // --- MODIFIKASI: Menambahkan variabel state untuk mode edit ---
     let isEditMode = false;
 
     function showPopup(text, duration = 2500) {
@@ -101,6 +104,7 @@
       if (myCode && myName) {
         setupExistingUser(myCode, myName);
         listenForPartner(myCode);
+        listenForSentRequest(myCode);
       } else if (myCode && !myName) {
         setupOldUserNeedsName(myCode);
       } else {
@@ -109,15 +113,15 @@
     }
 
     function setupExistingUser(myCode, myName) {
-      userNameInput.value = myName;
-      userNameInput.disabled = true;
-      codeInput.value = myCode;
-      codeInput.disabled = true;
-      nameStatus.textContent = `Nama Anda: ${myName}`;
-      codeStatus.textContent = `ID Anda: ${myCode}`;
-      resetBtn.style.display = 'block';
+        userNameInput.value = myName;
+        userNameInput.disabled = true;
+        codeInput.value = myCode;
+        codeInput.disabled = true;
+        nameStatus.textContent = `Nama Anda: ${myName}`;
+        codeStatus.textContent = `ID Anda: ${myCode}`;
+        resetBtn.style.display = 'block';
     }
-    
+
     function setupOldUserNeedsName(myCode) {
         showPopup("Update: Silakan masukkan nama Anda untuk melanjutkan.");
         codeInput.value = myCode;
@@ -129,8 +133,7 @@
             if (e.key === 'Enter') {
                 const newName = userNameInput.value.trim();
                 if (newName) {
-                    const userRef = ref(db, `users/${myCode}`);
-                    await update(userRef, { name: newName });
+                    await update(ref(db, `users/${myCode}`), { name: newName });
                     localStorage.setItem('myName', newName);
                     showPopup("Nama berhasil diperbarui!");
                     setTimeout(() => location.reload(), 1500);
@@ -141,7 +144,6 @@
     
     function setupNewUser() {
         nameStatus.textContent = "1. Masukkan nama, lalu tekan Enter.";
-        
         userNameInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const newName = userNameInput.value.trim();
@@ -155,7 +157,6 @@
                 }
             }
         });
-
         codeInput.addEventListener('input', handleNewCodeInput);
     }
 
@@ -165,10 +166,8 @@
             codeStatus.textContent = "ID harus terdiri dari 6 digit angka.";
             return;
         }
-
         const userRef = ref(db, `users/${code}`);
         const snap = await get(userRef);
-
         if (snap.exists()) {
             codeStatus.textContent = "ID ini sudah digunakan. Coba yang lain.";
         } else {
@@ -182,6 +181,32 @@
         }
     }
 
+    function listenForSentRequest(myCode) {
+        const requestToRef = ref(db, `connections/${myCode}/requestTo`);
+        onValue(requestToRef, async (snap) => {
+            const pendingPartnerId = snap.val();
+            if (pendingPartnerId) {
+                const partnerUserRef = ref(db, `users/${pendingPartnerId}`);
+                const partnerSnap = await get(partnerUserRef);
+                const partnerName = partnerSnap.exists() ? partnerSnap.val().name : pendingPartnerId;
+
+                accompliceInput.disabled = true;
+                accompliceInput.value = '';
+                linkBtn.style.display = 'none';
+                cancelRequestBtn.style.display = 'block';
+                disconnectBtn.style.display = 'none';
+                partnerStatus.textContent = `Menunggu persetujuan dari ${partnerName}...`;
+            } else {
+                if (!localStorage.getItem('accompliceCode')) {
+                    accompliceInput.disabled = false;
+                    linkBtn.style.display = 'block';
+                    cancelRequestBtn.style.display = 'none';
+                    partnerStatus.textContent = '';
+                }
+            }
+        });
+    }
+
     function listenForPartner(myCode) {
         const connRef = ref(db, `connections/${myCode}/partner`);
         onValue(connRef, async (snap) => {
@@ -193,84 +218,96 @@
                 
                 showPopup(`Anda kini tersambung dengan: ${partnerName} (${partnerCode})`);
                 accompliceInput.value = `${partnerName} (${partnerCode})`;
+                accompliceInput.disabled = true;
                 localStorage.setItem('accompliceCode', partnerCode);
+                
+                linkBtn.style.display = 'none';
+                cancelRequestBtn.style.display = 'none';
+                partnerStatus.textContent = '';
                 disconnectBtn.style.display = 'block';
+
             } else {
-                accompliceInput.value = '';
+                if(!isEditMode) accompliceInput.value = '';
+                accompliceInput.disabled = false;
                 localStorage.removeItem('accompliceCode');
                 disconnectBtn.style.display = 'none';
             }
         });
     }
 
-    async function clearAllData() {
-        // ... (fungsi ini tetap sama)
-    }
-
-    // --- EVENT LISTENERS ---
-
     linkBtn.addEventListener('click', async () => {
-      // ... (logika ini tetap sama)
+        const myCode = localStorage.getItem('myCode');
+        const accompliceCode = accompliceInput.value.trim();
+        if (!myCode) { showPopup('Anda harus mengatur identitas Anda terlebih dahulu!'); return; }
+        if (!accompliceCode) { showPopup('Masukkan ID partner.'); return; }
+        if (accompliceCode === myCode) { showPopup('Anda tidak bisa terhubung dengan diri sendiri.'); return; }
+        
+        const accompliceUserRef = ref(db, `users/${accompliceCode}`);
+        const snap = await get(accompliceUserRef);
+        if (!snap.exists()) { showPopup(`ID partner ${accompliceCode} tidak ditemukan.`); return; }
+
+        await set(ref(db, `connections/${accompliceCode}/requestFrom`), myCode);
+        await set(ref(db, `connections/${myCode}/requestTo`), accompliceCode);
+        showPopup(`Permintaan koneksi terkirim.`);
+    });
+
+    cancelRequestBtn.addEventListener('click', async () => {
+        const myCode = localStorage.getItem('myCode');
+        const requestToRef = ref(db, `connections/${myCode}/requestTo`);
+        const snap = await get(requestToRef);
+        const pendingPartnerId = snap.val();
+
+        if (myCode && pendingPartnerId) {
+            await remove(ref(db, `connections/${pendingPartnerId}/requestFrom`));
+            await remove(requestToRef);
+            showPopup("Permintaan dibatalkan.");
+        }
     });
 
     disconnectBtn.addEventListener('click', async () => {
-      // ... (logika ini tetap sama)
+        const myCode = localStorage.getItem('myCode');
+        const accompliceCode = localStorage.getItem('accompliceCode');
+        if (!myCode || !accompliceCode) return;
+
+        if (confirm(`Anda yakin ingin memutuskan sambungan dengan partner?`)) {
+            await remove(ref(db, `connections/${myCode}/partner`));
+            await remove(ref(db, `connections/${accompliceCode}/partner`));
+            showPopup("Koneksi berhasil diputuskan.");
+        }
     });
     
-    // --- MODIFIKASI TOTAL PADA LOGIKA TOMBOL GANTI IDENTITAS ---
     resetBtn.addEventListener('click', async () => { 
         if (!isEditMode) {
-            // --- TAHAP 1: MASUK KE MODE EDIT ---
             if (confirm("Anda yakin ingin mengubah identitas? Ini akan memutuskan koneksi yang ada jika Anda mengubah ID.")) {
                 const currentName = localStorage.getItem('myName');
                 const currentId = localStorage.getItem('myCode');
-
-                // Aktifkan input
                 userNameInput.disabled = false;
                 codeInput.disabled = false;
-
-                // Kosongkan value dan berikan placeholder
                 userNameInput.value = '';
                 codeInput.value = '';
                 userNameInput.placeholder = `Nama saat ini: ${currentName}`;
                 codeInput.placeholder = `ID saat ini: ${currentId}`;
-                
-                // Ubah tombol
                 resetBtn.textContent = 'Simpan Perubahan';
                 resetBtn.style.backgroundColor = '#28a745';
-                
-                // Set state ke mode edit
                 isEditMode = true;
             }
         } else {
-            // --- TAHAP 2: SIMPAN PERUBAHAN DARI MODE EDIT ---
             const newName = userNameInput.value.trim();
             const newId = codeInput.value.trim();
-
             if (!newName && !newId) {
                 showPopup("Tidak ada perubahan. Setidaknya isi satu kolom.");
                 return;
             }
-
             try {
                 let changesMade = false;
                 const currentName = localStorage.getItem('myName');
                 const currentId = localStorage.getItem('myCode');
 
-                // Logika untuk mengubah ID
                 if (newId && newId !== currentId) {
-                    if (!/^\d{6}$/.test(newId)) {
-                        showPopup("ID baru harus 6 digit angka.");
-                        return;
-                    }
+                    if (!/^\d{6}$/.test(newId)) { showPopup("ID baru harus 6 digit angka."); return; }
                     const newIdRef = ref(db, `users/${newId}`);
                     const snap = await get(newIdRef);
-                    if (snap.exists()) {
-                        showPopup("ID baru sudah digunakan. Coba yang lain.");
-                        return;
-                    }
-                    
-                    // Memindahkan data dari ID lama ke ID baru
+                    if (snap.exists()) { showPopup("ID baru sudah digunakan. Coba yang lain."); return; }
                     const oldDataSnap = await get(ref(db, `users/${currentId}`));
                     if (oldDataSnap.exists()) {
                         await set(newIdRef, oldDataSnap.val());
@@ -279,37 +316,65 @@
                     localStorage.setItem('myCode', newId);
                     changesMade = true;
                 }
-
-                // Logika untuk mengubah Nama
                 const finalId = localStorage.getItem('myCode');
                 if (newName && newName !== currentName) {
                     await update(ref(db, `users/${finalId}`), { name: newName });
                     localStorage.setItem('myName', newName);
                     changesMade = true;
                 }
-
                 if (changesMade) {
                     showPopup("Identitas berhasil diperbarui!");
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showPopup("Tidak ada data yang diubah.");
+                    location.reload();
                 }
-
             } catch (error) {
                 console.error("Gagal menyimpan perubahan:", error);
                 showPopup("Terjadi kesalahan saat menyimpan.");
             } finally {
-                // Keluar dari mode edit terlepas dari hasilnya
                 isEditMode = false;
             }
         }
     });
     
     clearDataBtn.onclick = async () => {
-      // ... (logika ini tetap sama)
+        if (confirm("TINDAKAN PERMANEN! Ini akan menghapus semua jejak Anda. Lanjutkan?")) {
+            const myCode = localStorage.getItem('myCode');
+            const accompliceCode = localStorage.getItem('accompliceCode');
+            try {
+                if (myCode) {
+                    if (accompliceCode) { await remove(ref(db, `connections/${accompliceCode}`)); }
+                    await remove(ref(db, `users/${myCode}`));
+                    await remove(ref(db, `connections/${myCode}`));
+                }
+            } finally {
+                localStorage.removeItem('myCode');
+                localStorage.removeItem('myName');
+                localStorage.removeItem('accompliceCode');
+                localStorage.removeItem('customPresets');
+            }
+            showPopup("Semua jejak telah dihapus.");
+            setTimeout(() => location.reload(), 1500);
+        }
     };
-    
-    // ... (sisa event listener untuk custom preset tetap sama)
+
+    const savePresetBtn = document.getElementById('savePresetBtn');
+    const clearPresetBtn = document.getElementById('clearPresetBtn');
+    const customPresetInput = document.getElementById('customPresetInput');
+    savePresetBtn.addEventListener('click', () => {
+        const presets = customPresetInput.value.trim().split(',').map(p => p.trim()).filter(Boolean);
+        if(presets.length > 0) {
+            localStorage.setItem('customPresets', JSON.stringify(presets));
+            showPopup('Preset disimpan!');
+        }
+    });
+    clearPresetBtn.addEventListener('click', () => {
+        localStorage.removeItem('customPresets');
+        customPresetInput.value = '';
+        showPopup('Preset dihapus!');
+    });
+    customPresetInput.value = JSON.parse(localStorage.getItem('customPresets') || '[]').join(', ');
     
     initializePage();
   </script>
