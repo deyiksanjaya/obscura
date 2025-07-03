@@ -2,63 +2,122 @@
 <html lang="id">
 <head>
   <script src="auth-guard.js"></script>
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>OBSCURA - Pengaturan</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Obscura - Pengaturan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400,700&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;padding:0;font-family:'Cardo',serif;background:radial-gradient(ellipse at center,#111 0%,#000 100%);color:#e0e0e0}
-    section{padding:20px;border-bottom:1px solid rgba(255,255,255,.1)}
-    input,button{width:100%;box-sizing:border-box;font-family:'Cardo',serif;padding:12px;margin-top:8px;background:#111;border:1px solid #444;color:#e0e0e0;border-radius:5px;display:block}
-    input:disabled{background-color:#222;cursor:not-allowed}
-    button{cursor:pointer}
-    button:hover{background-color:#222}
-    #popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);padding:20px 30px;border-radius:12px;font-family:'Cardo',serif;font-size:18px;color:#e0e0e0;box-shadow:0 0 20px rgba(255,255,255,.05);backdrop-filter:blur(4px);z-index:999;opacity:0;pointer-events:none;transition:opacity .5s ease;text-align:center}
-    #popup.show{opacity:1;pointer-events:auto}
-    .status-text{font-size:.9em;color:#888;margin-top:4px;min-height:1em}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+        height: 100%;
+        background: radial-gradient(ellipse at center, #111 0%, #000 100%);
+        font-family: 'Cardo', serif;
+        color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        opacity: 0;
+        animation: fadeIn 1s forwards;
+    }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    .container {
+        width: 100%;
+        max-width: 400px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 30px 35px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(5px);
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 25px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .input-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #aaa;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px 15px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #e0e0e0;
+        font-family: 'Cardo', serif;
+        font-size: 16px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #28a745;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background-color: #28a745;
+        color: white;
+        font-size: 16px;
+        font-family: 'Cardo', serif;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+        margin-bottom: 15px;
+    }
+
+    button:hover {
+        background-color: #218838;
+        transform: scale(1.02);
+    }
+
+    #backButton {
+        background-color: #6c757d;
+    }
+
+    #backButton:hover {
+        background-color: #5a6268;
+    }
   </style>
 </head>
 <body>
-  <section>
-    <h2>Identitas Anda</h2>
-    <input type="text" id="userName" placeholder="Masukkan nama Anda">
-    <div id="nameStatus" class="status-text"></div>
-    <input type="text" id="uniqueCode" maxlength="6" placeholder="6 digit angka" disabled>
-    <div id="codeStatus" class="status-text"></div>
-    <button id="resetCodeBtn" style="display:none; margin-top: 10px;">Ganti Identitas</button>
-  </section>
-
-  <section>
-    <h2>Partner</h2>
-    <input type="text" id="accompliceCode" placeholder="Masukkan ID partner">
-    <button id="linkBtn">Kirim Permintaan Koneksi</button>
-    <button id="disconnectBtn" style="margin-top: 10px; background-color: #521818;">Putuskan Sambungan</button>
-  </section>
-
-  <section>
-    <h2>Custom Thump</h2>
-    <input type="text" id="customPresetInput" placeholder="Pisahkan preset dengan koma">
-    <div style="margin-top: 10px; display: flex; gap: 10px;">
-      <button id="savePresetBtn">Simpan Preset</button>
-      <button id="clearPresetBtn" style="background-color: #d32f2f;">Hapus Preset</button>
+  <div class="container">
+    <h1>Pengaturan Identitas</h1>
+    <div class="input-group">
+      <label for="nameInput">Nama Anda</label>
+      <input type="text" id="nameInput" placeholder="Kosongkan jika tidak diubah">
     </div>
-  </section>
-
-  <section>
-    <a href="main.html" style="text-decoration: none;"><button type="button">Kembali ke Menu</button></a>
-    <button id="clearDataBtn" style="margin-top: 12px; background-color: #400; color: #f44336;">Hapus Semua Jejak</button>
-  </section>
-
-  <div id="popup"></div>
+    <div class="input-group">
+      <label for="idInput">ID Unik Anda</label>
+      <input type="text" id="idInput" placeholder="Kosongkan jika tidak diubah">
+    </div>
+    <button id="saveIdentity">Simpan Identitas</button>
+    <button id="backButton">Kembali ke Menu</button>
+  </div>
 
   <script type="module">
-    // PERBAIKAN: Menambahkan 'update' untuk fail-safe
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, get, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -69,229 +128,99 @@
       messagingSenderId: "866868400960",
       appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
     };
-    
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Variabel elemen DOM
-    const userNameInput = document.getElementById('userName');
-    const nameStatus = document.getElementById('nameStatus');
-    const codeInput = document.getElementById('uniqueCode');
-    const codeStatus = document.getElementById('codeStatus');
-    const resetBtn = document.getElementById('resetCodeBtn');
-    const accompliceInput = document.getElementById('accompliceCode');
-    const linkBtn = document.getElementById('linkBtn');
-    const disconnectBtn = document.getElementById('disconnectBtn');
-    const popup = document.getElementById('popup');
-    const clearDataBtn = document.getElementById('clearDataBtn');
+    const nameInput = document.getElementById('nameInput');
+    const idInput = document.getElementById('idInput');
+    const saveButton = document.getElementById('saveIdentity');
+    const backButton = document.getElementById('backButton');
+
+    // Tampilkan data yang ada sebagai placeholder
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentName = localStorage.getItem('myName');
+        const currentId = localStorage.getItem('myCode');
+        if (currentName) {
+            nameInput.placeholder = `Nama saat ini: ${currentName}`;
+        }
+        if (currentId) {
+            idInput.placeholder = `ID saat ini: ${currentId}`;
+        }
+    });
     
-    // --- FUNGSI UTAMA ---
+    backButton.addEventListener('click', () => {
+      window.location.href = 'main.html';
+    });
 
-    function showPopup(text, duration = 2500) {
-      popup.textContent = text;
-      popup.classList.add("show");
-      setTimeout(() => popup.classList.remove("show"), duration);
-    }
-    
-    async function initializePage() {
-      const myCode = localStorage.getItem('myCode');
-      const myName = localStorage.getItem('myName');
-      
-      disconnectBtn.style.display = 'none';
-
-      if (myCode && myName) { // Pengguna lama yang sudah lengkap
-        setupExistingUser(myCode, myName);
-        listenForPartner(myCode);
-      } else if (myCode && !myName) { // FAIL-SAFE: Pengguna lama sebelum update nama
-        setupOldUserNeedsName(myCode);
-      } else { // Pengguna baru
-        setupNewUser();
-      }
-    }
-
-    // --- FUNGSI PENDUKUNG ---
-
-    function setupExistingUser(myCode, myName) {
-      userNameInput.value = myName;
-      userNameInput.disabled = true;
-      codeInput.value = myCode;
-      codeInput.disabled = true;
-      nameStatus.textContent = `Nama Anda telah diatur.`;
-      codeStatus.textContent = "ID Anda telah diatur.";
-      resetBtn.style.display = 'block';
-    }
-    
-    function setupOldUserNeedsName(myCode) {
-        showPopup("Update: Silakan masukkan nama Anda untuk melanjutkan.");
-        codeInput.value = myCode;
-        codeInput.disabled = true; // ID lama tetap, tidak bisa diubah
-        userNameInput.disabled = false;
-        nameStatus.textContent = "Masukkan nama Anda, lalu tekan Enter.";
+    saveButton.addEventListener('click', async () => {
+        const newName = nameInput.value.trim();
+        const newId = idInput.value.trim();
         
-        userNameInput.addEventListener('keydown', async (e) => {
-            if (e.key === 'Enter') {
-                const newName = userNameInput.value.trim();
-                if (newName) {
-                    const userRef = ref(db, `users/${myCode}`);
-                    await update(userRef, { name: newName }); // Update nama di Firebase
-                    localStorage.setItem('myName', newName);
-                    showPopup("Nama berhasil diperbarui!");
-                    setTimeout(() => location.reload(), 1500);
-                }
-            }
-        });
-    }
-    
-    function setupNewUser() {
-        nameStatus.textContent = "1. Masukkan nama, lalu tekan Enter.";
-        
-        userNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const newName = userNameInput.value.trim();
-                if (newName) {
-                    localStorage.setItem('myName', newName);
-                    userNameInput.disabled = true;
-                    codeInput.disabled = false;
-                    nameStatus.textContent = `Nama disimpan: ${newName}`;
-                    codeStatus.textContent = "2. Sekarang masukkan 6 digit ID Anda.";
-                    codeInput.focus();
-                }
-            }
-        });
+        const currentName = localStorage.getItem('myName');
+        const currentId = localStorage.getItem('myCode');
 
-        codeInput.addEventListener('input', handleNewCodeInput);
-    }
-
-    async function handleNewCodeInput(e) {
-        const code = e.target.value.trim();
-        if (!/^\d{6}$/.test(code)) {
-            codeStatus.textContent = "ID harus terdiri dari 6 digit angka.";
+        if (!newName && !newId) {
+            alert("Silakan isi setidaknya satu kolom untuk memperbarui identitas Anda.");
             return;
         }
 
-        const userRef = ref(db, `users/${code}`);
-        const snap = await get(userRef);
-
-        if (snap.exists()) {
-            codeStatus.textContent = "ID ini sudah digunakan. Coba yang lain.";
-        } else {
-            const myName = localStorage.getItem('myName');
-            await set(userRef, { name: myName, createdAt: Date.now() });
-            localStorage.setItem('myCode', code);
-            codeStatus.textContent = "ID berhasil disimpan!";
-            codeInput.disabled = true;
-            resetBtn.style.display = 'block';
-            codeInput.removeEventListener('input', handleNewCodeInput);
-        }
-    }
-
-    function listenForPartner(myCode) {
-        const connRef = ref(db, `connections/${myCode}/partner`);
-        onValue(connRef, async (snap) => {
-            const partnerCode = snap.val();
-            if (partnerCode) {
-                const partnerUserRef = ref(db, `users/${partnerCode}`);
-                const partnerSnap = await get(partnerUserRef);
-                const partnerName = partnerSnap.exists() ? partnerSnap.val().name : "Partner";
-                
-                showPopup(`Anda kini tersambung dengan: ${partnerName} (${partnerCode})`);
-                accompliceInput.value = `${partnerName} (${partnerCode})`;
-                localStorage.setItem('accompliceCode', partnerCode);
-                disconnectBtn.style.display = 'block';
-            } else {
-                accompliceInput.value = '';
-                localStorage.removeItem('accompliceCode');
-                disconnectBtn.style.display = 'none';
-            }
-        });
-    }
-
-    async function clearAllData() {
-        const myCode = localStorage.getItem('myCode');
-        const accompliceCode = localStorage.getItem('accompliceCode');
+        let changesMade = false;
+        
         try {
-            if (myCode) {
-                if (accompliceCode) { await remove(ref(db, `connections/${accompliceCode}`)); }
-                await remove(ref(db, `users/${myCode}`));
-                await remove(ref(db, `connections/${myCode}`));
+            // --- Logika untuk memperbarui ID ---
+            if (newId && newId !== currentId) {
+                const newIdRef = ref(db, `users/${newId}`);
+                const newIdSnap = await get(newIdRef);
+
+                if (newIdSnap.exists()) {
+                    alert("ID ini sudah digunakan oleh orang lain. Silakan pilih ID yang lain.");
+                    return;
+                }
+
+                // Jika ada ID lama, pindahkan data. Jika tidak, buat baru.
+                if (currentId) {
+                    const oldIdRef = ref(db, `users/${currentId}`);
+                    const oldDataSnap = await get(oldIdRef);
+                    if (oldDataSnap.exists()) {
+                        await set(newIdRef, oldDataSnap.val()); // Salin data ke ID baru
+                        await remove(oldIdRef); // Hapus data dari ID lama
+                    }
+                }
+                
+                // Perbarui ID di localStorage
+                localStorage.setItem('myCode', newId);
+                changesMade = true;
             }
-        } finally {
-            localStorage.removeItem('myCode');
-            localStorage.removeItem('myName'); // PERBAIKAN: Hapus nama juga
-            localStorage.removeItem('accompliceCode');
-        }
-    }
 
-    // --- EVENT LISTENERS ---
+            // Dapatkan ID yang akan digunakan untuk update nama (bisa ID baru atau ID lama)
+            const finalId = localStorage.getItem('myCode');
 
-    linkBtn.addEventListener('click', async () => {
-      const myCode = localStorage.getItem('myCode');
-      const accompliceCode = accompliceInput.value.trim();
-
-      if (!myCode) { showPopup('Anda harus mengatur identitas Anda terlebih dahulu!'); return; }
-      // ... (sisa logika sama)
-      
-      const accompliceUserRef = ref(db, `users/${accompliceCode}`);
-      const snap = await get(accompliceUserRef);
-      if (!snap.exists()) { showPopup(`ID partner ${accompliceCode} tidak ditemukan.`); return; }
-
-      // ... (sisa logika sama)
-      
-      await set(ref(db, `connections/${accompliceCode}/requestFrom`), myCode);
-      showPopup(`Permintaan koneksi terkirim ke ${accompliceCode}.`);
-    });
-
-    disconnectBtn.addEventListener('click', async () => {
-        const myCode = localStorage.getItem('myCode');
-        if (!myCode) return;
-
-        if (confirm(`Anda yakin ingin memutuskan sambungan?`)) {
-            const accompliceCode = localStorage.getItem('accompliceCode');
-            if(accompliceCode) {
-                await remove(ref(db, `connections/${myCode}`));
-                await remove(ref(db, `connections/${accompliceCode}`));
+            // --- Logika untuk memperbarui Nama ---
+            if (newName && newName !== currentName) {
+                if (!finalId) {
+                    alert("Anda harus mengatur ID terlebih dahulu sebelum bisa menyimpan nama.");
+                    return;
+                }
+                const nameRef = ref(db, `users/${finalId}/name`);
+                await set(nameRef, newName);
+                localStorage.setItem('myName', newName);
+                changesMade = true;
             }
+
+            if (changesMade) {
+                alert("Identitas berhasil diperbarui!");
+                // Reload halaman untuk membersihkan input dan memperbarui placeholder
+                window.location.reload(); 
+            } else {
+                alert("Tidak ada perubahan yang dilakukan. Nilai yang Anda masukkan sama dengan yang sudah tersimpan.");
+            }
+
+        } catch (error) {
+            console.error("Gagal menyimpan identitas:", error);
+            alert("Terjadi kesalahan saat menyimpan identitas. Silakan coba lagi.");
         }
     });
-    
-    resetBtn.addEventListener('click', async () => { 
-        if (confirm("Anda yakin ingin mengganti identitas? Ini akan memutuskan koneksi yang ada.")) { 
-            await clearAllData(); 
-            location.reload(); 
-        } 
-    });
-    
-    clearDataBtn.onclick = async () => {
-        if (confirm("TINDAKAN PERMANEN! Ini akan menghapus semua jejak Anda. Lanjutkan?")) {
-            await clearAllData();
-            showPopup("Semua jejak telah dihapus.");
-            setTimeout(() => location.reload(), 1500);
-        }
-    };
-
-    // (event listener untuk custom preset tetap sama)
-    const savePresetBtn = document.getElementById('savePresetBtn');
-    const clearPresetBtn = document.getElementById('clearPresetBtn');
-    const customPresetInput = document.getElementById('customPresetInput');
-
-    savePresetBtn.addEventListener('click', () => {
-        const presets = customPresetInput.value.trim().split(',').map(p => p.trim()).filter(Boolean);
-        if(presets.length > 0) {
-            localStorage.setItem('customPresets', JSON.stringify(presets));
-            showPopup('Preset disimpan!');
-        }
-    });
-
-    clearPresetBtn.addEventListener('click', () => {
-        localStorage.removeItem('customPresets');
-        customPresetInput.value = '';
-        showPopup('Preset dihapus!');
-    });
-
-    customPresetInput.value = JSON.parse(localStorage.getItem('customPresets') || '[]').join(', ');
-    
-    // --- Inisialisasi Halaman ---
-    initializePage();
   </script>
 </body>
 </html>
