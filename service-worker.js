@@ -1,4 +1,4 @@
-const CACHE_NAME = 'obscura-cache-v1.1.1'; // Naikkan versi cache
+const CACHE_NAME = 'obscura-cache-v1.1.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,14 +7,21 @@ const urlsToCache = [
   '/sender.html',
   '/receiver.html',
   '/instructions.html',
-  '/manifest.webmanifest', // Tambahkan manifest ke cache
-  '/firebase-init.js', // Meskipun kita hapus, biarkan dulu untuk kompatibilitas
+  '/manifest.webmanifest',
   '/icon-192.png',
   '/icon-512.png',
   '/icon-512-maskable.png'
 ];
 
-// Hapus cache lama saat service worker baru diaktifkan
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Cache dibuka dan file disimpan');
+      return cache.addAll(urlsToCache);
+    })
+  );
+});
+
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -25,20 +32,17 @@ self.addEventListener('activate', event => {
   );
 });
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Opened cache');
-      return cache.addAll(urlsToCache);
-    })
-  );
-});
-
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Jika ada di cache, kembalikan dari cache. Jika tidak, ambil dari jaringan.
-      return response || fetch(event.request);
-    })
+    fetch(event.request)
+      .then(networkResponse => {
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
