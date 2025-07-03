@@ -9,19 +9,17 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Obscura - Instruksi</title>
+  <title>Obscura - Panduan</title>
   <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      /* Menambahkan padding-top agar konten tidak tertutup tombol baru */
-      padding: 60px 0 0 0; 
+      padding: 70px 0 0 0; 
       font-family: 'Cardo', serif;
       background: radial-gradient(ellipse at center, #111 0%, #000 100%);
       color: #e0e0e0;
       line-height: 1.8;
     }
-    /* === CSS BARU UNTUK TOMBOL POJOK KIRI ATAS === */
     .top-left-button {
       position: fixed;
       top: 16px;
@@ -29,7 +27,7 @@
       padding: 8px 14px;
       border-radius: 8px;
       text-decoration: none;
-      font-size: 18px; /* Sedikit lebih besar untuk ikon panah */
+      font-size: 18px;
       z-index: 1000;
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: rgba(255, 255, 255, 0.05);
@@ -40,61 +38,37 @@
     .top-left-button:hover {
       background: rgba(255, 255, 255, 0.1);
     }
-    /* =========================================== */
-
     .container {
       max-width: 800px;
       margin: 0 auto;
       padding: 20px 30px 50px 30px;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards;
     }
-    .title-container {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 150px;
-        margin-bottom: 10px;
+    @keyframes fadeIn { to { opacity: 1; } }
+    h1, h2, h3 {
+      font-weight: 700;
+      color: #fff;
     }
     h1 {
-      font-weight: 700;
-      color: #fff;
       text-align: center;
       font-size: 2.5em;
-      margin: 0;
-      z-index: 2;
-    }
-    .circle {
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        animation: rotate 12s linear infinite;
-        z-index: 1;
-        filter: blur(0.8px);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.02);
-    }
-    @keyframes rotate {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      margin-bottom: 20px;
     }
     h2 {
-      font-weight: 700;
-      color: #fff;
       border-bottom: 1px solid rgba(255,255,255,0.1);
       padding-bottom: 10px;
       margin-top: 40px;
       margin-bottom: 20px;
     }
     h3 {
-        color: #fff;
-        font-weight: 700;
         margin-top: 25px;
         margin-bottom: 5px;
     }
     p, li {
       font-size: 1.1em;
       color: #ccc;
+      text-align: justify;
     }
     ul {
       list-style-type: none;
@@ -107,12 +81,17 @@
       margin-bottom: 10px;
       border-left: 3px solid #4caf50;
     }
-    strong {
+    strong, code {
       font-weight: 700;
       color: #fff;
     }
+    code {
+      background-color: rgba(0,0,0,0.3);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
     .intro-box {
-        text-align: justify;
         background: rgba(0,0,0,0.2);
         padding: 20px;
         border-radius: 8px;
@@ -125,136 +104,85 @@
       color: #888;
       font-style: italic;
     }
-    /* === CSS UNTUK TOMBOL LAMA DIHAPUS === */
-    /* .back-button { ... } */
-    /* .back-button:hover { ... } */
-    /* ================================== */
-
-    .fade-in {
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeInUp 0.6s ease forwards;
-    }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
   </style>
 </head>
 <body>
 
-  <a href="main.html" class="top-left-button">←</a>
+  <a href="main.html" class="top-left-button" title="Kembali ke Menu">←</a>
 
   <div class="container">
-    <div class="title-container">
-      <div class="circle"></div>
-      <h1>OBSCURA</h1>
-    </div>
-    
-    <button id="forceRefreshBtn" style="display:block;margin:20px auto 0 auto;padding:10px 20px;background:#333;color:#fff;border:none;border-radius:8px;cursor:pointer">Update App</button>
-    <br>
-
+    <h1>Panduan Obscura</h1>
 
     <div class="intro-box">
-      
-      <p class="fade-in" style="animation-delay: 0.2s;">
-      Selamat datang di <strong>Obscura</strong>. Ini adalah proyek independen yang lahir dari sebuah hobi dan hasrat untuk dunia sulap, terutama seni mentalisme. Dikonsepkan oleh <strong>@pesulapgabut</strong>, aplikasi ini bukanlah produk komersial dan tidak untuk diperjualbelikan.
-      </p>
-      <p class="fade-in" style="animation-delay: 0.4s;">
-      Obscura adalah aplikasi web interaktif yang memungkinkan seorang pesulap dan asistennya untuk berkomunikasi secara diam-diam selama pertunjukan berlangsung. Asisten (Sender) dapat mengirimkan sinyal, informasi, atau kode rahasia secara real-time kepada pesulap (Receiver), yang akan menerima pesan tersebut melalui tampilan layar atau suara (TTS). Sistem ini dirancang untuk digunakan secara praktis, tanpa terlihat mencolok oleh penonton.
-      </p>
-      <p class="fade-in" style="animation-delay: 0.6s;">
-      Obscura didedikasikan sepenuhnya untuk dapat digunakan secara gratis oleh teman-teman terdekat sebagai sarana untuk menyalurkan ide dan kreativitas dalam dunia pertunjukan. Selamat menggunakan.
-      </p>
+      <p>Selamat datang di <strong>Obscura</strong>. Aplikasi web ini dirancang sebagai alat bantu komunikasi rahasia untuk pertunjukan sulap dan mentalism. Dikonsepkan oleh <strong>@pesulapgabut</strong>, proyek ini gratis dan didedikasikan untuk teman-teman terdekat.</p>
     </div>
 
-    <h2 class="fade-in" style="animation-delay: 0.8s;">1. Memulai & Terhubung</h2>
+    <h2>Langkah Awal: Persiapan</h2>
+    <p>Sebelum dapat menggunakan Obscura, ada dua langkah wajib yang harus diselesaikan.</p>
     <ul>
-      <li class="fade-in" style="animation-delay: 1s;"><strong>Membuat ID Anda:</strong><br>Setiap pengguna harus memiliki ID 6 digit. Buka menu <strong>Settings</strong>, lalu masukkan 6 digit angka di bagian "ID Anda" untuk membuat identitas permanen Anda.</li>
-      <li class="fade-in" style="animation-delay: 1.2s;"><strong>Menghubungkan dengan Partner:</strong><br>Di menu <strong>Settings</strong>, masukkan ID teman Anda di kolom "Partner", lalu tekan "Kirim Permintaan Koneksi". Teman Anda harus menekan <strong>"Izinkan"</strong> pada notifikasi yang muncul di halaman utamanya.</li>
+      <li><strong>1. Membuat ID Pengguna</strong><br>Setiap pengguna harus memiliki ID permanen. Buka halaman <strong>Settings</strong>, lalu di bagian "ID Anda", masukkan 6 digit angka unik dan sistem akan menyimpannya secara otomatis.</li>
+      <li><strong>2. Menghubungkan Partner</strong><br>Untuk berkomunikasi, Anda harus terhubung dengan partner. Masih di halaman <strong>Settings</strong>, masukkan 6 digit ID partner Anda di kolom "Partner", lalu tekan "Kirim Permintaan Koneksi". Partner Anda akan menerima notifikasi di Menu Utama dan harus menekan "Izinkan".</li>
     </ul>
 
-    <h2 class="fade-in" style="animation-delay: 1.4s;">2. Halaman Sender (Pengirim)</h2>
-    <p class="fade-in" style="animation-delay: 1.6s;">Halaman ini berfungsi sebagai "remote control" Anda untuk mengirim informasi. Anda hanya bisa mengaksesnya saat terhubung dengan seorang <strong>Partner</strong>.</p>
+    <h2>Penggunaan Dasar</h2>
+    <p>Setelah terhubung, Anda dan partner Anda memiliki peran sebagai Pengirim (Sender) atau Penerima (Receiver).</p>
+    
+    <h3>Halaman Sender (Pengirim)</h3>
+    <p>Halaman ini adalah "remote control" untuk mengirimkan informasi kepada Receiver.</p>
     <ul>
-      <li class="fade-in" style="animation-delay: 1.8s;"><h3>Input Teks</h3>Ketik pesan atau kata apa pun, lalu tekan <strong>Enter</strong> pada keyboard Anda untuk mengirimkannya.</li>
-      <li class="fade-in" style="animation-delay: 2s;"><h3>Input Angka Cepat</h3>Gunakan tombol angka (0-9) untuk mengirim satu digit angka secara instan dengan sekali tekan.</li>
-      <li class="fade-in" style="animation-delay: 2.2s;"><h3>Kalkulator</h3>Gunakan kalkulator untuk melakukan perhitungan. Saat Anda menekan tombol <strong>=</strong>, hasilnya akan langsung dikirim ke partner Anda dan display kalkulator akan otomatis bersih.</li>
+        <li><strong>Input Teks:</strong> Ketik pesan apa pun, lalu tekan <strong>Enter</strong> untuk mengirim.</li>
+        <li><strong>Input Angka Cepat:</strong> Gunakan tombol angka (0-9) untuk mengirim satu digit angka secara instan.</li>
+        <li><strong>Kalkulator Dasar:</strong> Lakukan perhitungan. Saat Anda menekan tombol <code>=</code>, hasilnya akan langsung terkirim dan display kalkulator akan bersih.</li>
     </ul>
 
-    <h2 class="fade-in" style="animation-delay: 2.4s;">3. Halaman Receiver (Penerima)</h2>
-    <p class="fade-in" style="animation-delay: 2.6s;">Halaman ini berfungsi sebagai "layar" Anda untuk menerima informasi dari Sender atau Tamu.</p>
+    <h3>Halaman Receiver (Penerima)</h3>
+    <p>Halaman ini berfungsi sebagai "layar" untuk menerima informasi secara diam-diam.</p>
     <ul>
-      <li class="fade-in" style="animation-delay: 2.8s;"><h3>Penerimaan Real-time</h3>Layar akan secara otomatis menampilkan data yang dikirim. Data baru akan menggantikan yang lama.</li>
-      <li class="fade-in" style="animation-delay: 3s;"><h3>Text-to-Speech (TTS)</h3>Secara default, suara akan aktif. Gunakan tombol speaker untuk mengaktifkan atau mematikan suara.</li>
-      <li class="fade-in" style="animation-delay: 3.2s;"><h3>Tombol Clear Display</h3>Gunakan tombol ini di pojok kanan atas untuk membersihkan layar secara manual.</li>
+        <li><strong>Menerima Data:</strong> Layar akan otomatis menampilkan data yang dikirimkan secara real-time.</li>
+        <li><strong>Kontrol Suara (TTS):</strong> Secara default, suara **nonaktif**. Tekan ikon speaker untuk mengaktifkan/menonaktifkan fitur Text-to-Speech. Anda akan mendengar notifikasi "Voice On" atau "Voice Off".</li>
+        <li><strong>Membersihkan Layar:</strong> Tekan tombol "Clear Display" di pojok kanan atas untuk membersihkan layar secara manual.</li>
     </ul>
 
-    <h2 class="fade-in" style="animation-delay: 3.4s;">4. Fitur Lanjutan: Link Tamu</h2>
-    <p class="fade-in" style="animation-delay: 3.6s;">Fitur ini memungkinkan Anda menerima data dari seseorang yang tidak memiliki aplikasi ini.</p>
+    <h2>Fitur Lanjutan</h2>
+    <p>Maksimalkan penggunaan Obscura dengan fitur-fitur canggih berikut.</p>
     <ul>
-      <li class="fade-in" style="animation-delay: 3.8s;">Di <strong>Menu Utama</strong>, tekan tombol "Buat Link Tamu".</li>
-      <li class="fade-in" style="animation-delay: 4s;">Sebuah kotak dialog akan muncul. Tekan <strong>"Salin"</strong> atau <strong>"Bagikan"</strong> untuk memberikan link tersebut.</li>
-      <li class="fade-in" style="animation-delay: 4.2s;">Link hanya bisa digunakan <strong>sekali</strong>. Setelah tamu terhubung, status akan berubah menjadi "Tamu Terhubung".</li>
-    </ul>
-
-    <h2 class="fade-in" style="animation-delay: 4.4s;">5. Custom Thump Preset</h2>
-    <p class="fade-in" style="animation-delay: 4.6s;">Anda dapat membuat tombol-tombol cepat dengan isi pesan yang bisa disesuaikan.</p>
-    <ul>
-      <li class="fade-in" style="animation-delay: 4.8s;">Buka halaman <strong>Settings</strong> (api.html)</li>
-      <li class="fade-in" style="animation-delay: 5s;">Gulir ke bagian <strong>Custom Thump</strong></li>
-      <li class="fade-in" style="animation-delay: 5.2s;">Masukkan kata atau frasa yang ingin dijadikan tombol, pisahkan dengan koma (Contoh: <code>Merah, Tengah, 2 Kartu</code>)</li>
-      <li class="fade-in" style="animation-delay: 5.4s;">Tekan tombol <strong>Simpan Preset</strong></li>
-      <li class="fade-in" style="animation-delay: 5.6s;">Tombol preset akan muncul di halaman <strong>Sender</strong></li>
-      <li class="fade-in" style="animation-delay: 5.8s;">Tekan <strong>Hapus Preset</strong> untuk menghapus semua</li>
-    </ul>
-
-    <h2 class="fade-in" style="animation-delay: 6s;">6. Force Refresh</h2>
-    <p class="fade-in" style="animation-delay: 6.2s;">Digunakan saat aplikasi tidak memperbarui meskipun sudah ada versi baru.</p>
-    <ul>
-      <li class="fade-in" style="animation-delay: 6.4s;">Lihat di bagian atas halaman ini
-      <li class="fade-in" style="animation-delay: 6.6s;">Di sana terdapat tombol <strong>Update App</strong></li>
-      <li class="fade-in" style="animation-delay: 6.8s;">Ketika tombol di-klik, cache lama akan dihapus, dan halaman dimuat ulang</li>
-      <li class="fade-in" style="animation-delay: 7s;">Fitur ini <strong>tidak menghapus</strong> data penting seperti kode koneksi atau preset</li>
-    </ul>
-
-    <h2 class="fade-in" style="animation-delay: 7.2s;">7. Kalkulator & Kode Kartu</h2>
-    <p class="fade-in" style="animation-delay: 7.4s;">Kalkulator di halaman Sender dapat mengirim hasil hitung atau kode kartu berdasarkan sistem Mnemonica Stack.</p>
-    <ul>
-      <li class="fade-in" style="animation-delay: 7.6s;">Masukkan angka antara <strong>1–52</strong> ke kalkulator</li>
-      <li class="fade-in" style="animation-delay: 7.8s;">Tekan tombol <strong>=</strong></li>
-      <li class="fade-in" style="animation-delay: 8s;">Contoh: <code>17</code> → <strong>9 Hati</strong></li>
-      <li class="fade-in" style="animation-delay: 8.2s;">Pesan akan dikirim sebagai teks ke receiver</li>
-      <li class="fade-in" style="animation-delay: 8.4s;">Jika yang dimasukkan berupa kalkulasi (misalnya <code>5+7</code>), hasil hitungnya akan dikirim</li>
+      <li><strong>Kalkulator Kode Kartu:</strong> Selain berhitung, kalkulator di halaman Sender dapat menerjemahkan angka menjadi kartu dari urutan Mnemonica. Masukkan angka dari <code>1</code> hingga <code>52</code> dan tekan <code>=</code>. Contoh: input <code>17</code> akan mengirim teks "9 Hati" ke Receiver.</li>
+      <li><strong>Tombol Cepat (Custom Thump):</strong> Buat tombol preset Anda sendiri di halaman <strong>Settings</strong>. Gulir ke bawah ke bagian "Custom Thump", masukkan beberapa kata yang dipisahkan koma (contoh: <code>Merah, Biru, Kanan, Kiri</code>), lalu simpan. Tombol-tombol tersebut akan muncul di halaman Sender untuk akses cepat.</li>
+      <li><strong>Menerima Info dari Tamu:</strong> Di <strong>Menu Utama</strong>, tekan "Buat Link Tamu". Bagikan link unik tersebut kepada siapa saja. Mereka bisa mengirimkan informasi kepada Anda melalui halaman khusus tanpa perlu memiliki akun Obscura. Link ini hanya berlaku untuk satu kali koneksi.</li>
     </ul>
     
+    <h2>Pemeliharaan & Bantuan</h2>
+    <p>Gunakan fitur berikut untuk mengelola aplikasi Anda.</p>
+    <ul>
+        <li><strong>Memperbarui Aplikasi:</strong> Jika Anda merasa aplikasi tidak menampilkan versi terbaru, buka halaman ini (Panduan) lalu tekan tombol <strong>Update App</strong> di bagian atas. Ini akan membersihkan cache dan memaksa aplikasi memuat versi terbarunya.</li>
+        <li><strong>Menghapus Semua Data:</strong> Di halaman <strong>Settings</strong>, tombol "Hapus Semua Jejak" akan menghapus ID Anda, koneksi, preset, dan data lainnya dari perangkat dan server. Gunakan dengan hati-hati karena tindakan ini bersifat permanen.</li>
+    </ul>
+
     <div class="credit">
       <p>Conceptor: @pesulapgabut</p>
     </div>
   </div>
+
   <script>
+    // Script untuk tombol force refresh tidak diubah
     const forceRefreshBtn = document.getElementById("forceRefreshBtn");
-    forceRefreshBtn.addEventListener("click", async () => {
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const reg of registrations) {
-          await reg.unregister();
-        }
-      }
-
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        for (const name of cacheNames) {
-          await caches.delete(name);
-        }
-      }
-
-      window.location.reload(true);
-    });
+    if (forceRefreshBtn) {
+        forceRefreshBtn.addEventListener("click", async () => {
+            if (!confirm("Ini akan menghapus cache dan me-refresh aplikasi. Lanjutkan untuk mendapatkan versi terbaru?")) {
+                return;
+            }
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const reg of registrations) { await reg.unregister(); }
+            }
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                for (const name of cacheNames) { await caches.delete(name); }
+            }
+            alert("Aplikasi akan dimuat ulang sekarang.");
+            window.location.reload(true);
+        });
+    }
   </script>
 </body>
 </html>
