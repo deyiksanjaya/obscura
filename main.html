@@ -26,13 +26,11 @@
         display: flex; 
         flex-direction: column; 
     }
-    
     .scroll-container { 
         flex: 1;
         overflow-y: auto;
         padding: 40px 0;
     }
-
     .menu-column { 
         display: flex; 
         flex-direction: column; 
@@ -45,33 +43,23 @@
     .menu-item { width: 90vw; max-width: 300px; aspect-ratio: 1 / 1; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; background: rgba(255, 255, 255, 0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; text-align: center; text-decoration: none; color: inherit; position: relative; box-shadow: 0 0 10px rgba(255, 255, 255, 0.02); transform: translateY(30px); opacity: 0; animation: slideIn 0.6s ease forwards; }
     .menu-item.disabled { opacity: 0.5 !important; cursor: not-allowed; background: rgba(255, 255, 255, 0.01); transform: scale(0.98); }
     .menu-item.disabled:hover { transform: scale(0.98); box-shadow: 0 0 10px rgba(255, 255, 255, 0.02); }
-    
-    .menu-item:nth-child(1) { animation-delay: 0.4s; }
-    .menu-item:nth-child(2) { animation-delay: 0.6s; }
-    .menu-item:nth-child(3) { animation-delay: 0.8s; }
-    .menu-item:nth-child(4) { animation-delay: 1.0s; }
-    .menu-item:nth-child(5) { animation-delay: 1.2s; }
-    .menu-item:nth-child(6) { animation-delay: 1.4s; }
-
-
+    .menu-item:nth-child(1){animation-delay:.4s} .menu-item:nth-child(2){animation-delay:.6s} .menu-item:nth-child(3){animation-delay:.8s} .menu-item:nth-child(4){animation-delay:1s} .menu-item:nth-child(5){animation-delay:1.2s} .menu-item:nth-child(6){animation-delay:1.4s}
     @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
     .menu-item:not(.disabled):hover { background: rgba(255, 255, 255, 0.04); transform: scale(1.03); box-shadow: 0 0 12px rgba(255, 255, 255, 0.1); }
     .menu-item svg { width: 48px; height: 48px; margin-bottom: 12px; fill: #ffffff; opacity: 0.8; }
     .menu-item span { font-size: 16px; letter-spacing: 1px; }
-
     .top-info { position: absolute; top: 10px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; }
     #userCodeDisplay, #connectionInfo { color: #999; font-size: 12px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; opacity: 0; animation: fadeIn 1s ease forwards; animation-delay: 0.5s; }
     #connectionInfo { text-align: right; }
-
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1002; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .modal-overlay.visible { opacity: 1; pointer-events: auto; }
     .modal-content { background: #1a1a1a; padding: 25px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; box-shadow: 0 5px 25px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; width: 90%; max-width: 400px; }
     .modal-overlay.visible .modal-content { transform: scale(1); }
     .modal-title { font-size: 1.2em; margin-top: 0; margin-bottom: 20px; }
     .modal-buttons { display: flex; gap: 15px; margin-top: 20px; }
-    .modal-buttons button { flex: 1; padding: 10px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
-    #acceptBtn, #shareBtn { background-color: #28a745; color: white; }
-    #acceptBtn:hover, #shareBtn:hover { background-color: #218838; }
+    .modal-buttons button, .modal-content > button { flex: 1; padding: 12px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
+    #acceptBtn, #shareBtn, #goToSettingsBtn { background-color: #28a745; color: white; }
+    #acceptBtn:hover, #shareBtn:hover, #goToSettingsBtn:hover { background-color: #218838; }
     #denyBtn, #copyBtn { background-color: #6c757d; color: white; }
     #denyBtn:hover, #copyBtn:hover { background-color: #5a6268; }
     #guestLinkInput { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: #ccc; border-radius: 8px; text-align: center; font-size: 0.9em; }
@@ -80,67 +68,33 @@
 <body>
   <div class="top-info">
     <div id="userCodeDisplay"></div>
-    <div id="connectionInfo">Mengecek koneksi...</div>
+    <div id="connectionInfo"></div>
   </div>
 
   <div class="scroll-container">
-  <div class="menu-column">
-    <a href="receiver.html" class="menu-item" id="receiver">
-      <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6zm0 2.2L18 9v10H6V9l6-3.8zM12 12a2 2 0 110 4 2 2 0 010-4z"/></svg>
-      <span>Receiver</span>
-    </a>
-    <a href="sender.html" class="menu-item" id="sender">
-      <svg viewBox="0 0 24 24"><path d="M2 3v18l20-9L2 3zm2.18 2.5L17 12 4.18 18.5V5.5z"/></svg>
-      <span>Sender</span>
-    </a>
-    
-    <a href="api.html" class="menu-item">
-      <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg>
-      <span>Settings</span>
-    </a>
-    
-    <a href="instructions.html" class="menu-item">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-      <span>Instructions</span>
-    </a>
-
-    <a href="#" class="menu-item" id="guestLinkBtn">
-      <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
-      <span>Buat Link Tamu</span>
-    </a>
-
-    <a href="#" class="menu-item" id="disconnectGuestBtn" style="display: none; background-color: #4a2525;">
-      <svg viewBox="0 0 24 24"><path d="M16 8v3l4-4-4-4v3H8v2h8zM8 16v-3l-4 4 4 4v-3h8v-2H8z"/></svg>
-      <span>Putuskan Tamu</span>
-    </a>
-
+    <div class="menu-column">
+      <a href="receiver.html" class="menu-item" id="receiver"><svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6zm0 2.2L18 9v10H6V9l6-3.8zM12 12a2 2 0 110 4 2 2 0 010-4z"/></svg><span>Receiver</span></a>
+      <a href="sender.html" class="menu-item" id="sender"><svg viewBox="0 0 24 24"><path d="M2 3v18l20-9L2 3zm2.18 2.5L17 12 4.18 18.5V5.5z"/></svg><span>Sender</span></a>
+      <a href="api.html" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v3h-2V7h-4v2.18a3 3 0 010 5.64V17h4v-3h2v3a2 2 0 01-2 2h-4v1a2 2 0 01-4 0v-1H6a2 2 0 01-2-2v-3h2v3h4v-2.18a3 3 0 010-5.64V7H6v3H4V7a2 2 0 012-2h4V4a2 2 0 012-2z"/></svg><span>Settings</span></a>
+      <a href="instructions.html" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span>Instructions</span></a>
+      <a href="#" class="menu-item" id="guestLinkBtn"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg><span>Buat Link Tamu</span></a>
+      <a href="#" class="menu-item" id="disconnectGuestBtn" style="display: none; background-color: #4a2525;"><svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg><span>Putuskan Tamu</span></a>
+    </div>
   </div>
-</div>
-
 
   <div id="requestModal" class="modal-overlay">
-    <div class="modal-content">
-      <p class="modal-title" id="requestMessage">Pengguna ingin terkoneksi</p>
-      <div class="modal-buttons">
-        <button id="denyBtn">Tolak</button>
-        <button id="acceptBtn">Izinkan</button>
-      </div>
-    </div>
+    <div class="modal-content"><p class="modal-title" id="requestMessage"></p><div class="modal-buttons"><button id="denyBtn">Tolak</button><button id="acceptBtn">Izinkan</button></div></div>
   </div>
 
   <div id="shareModal" class="modal-overlay">
-    <div class="modal-content">
-      <p class="modal-title">Bagikan Link Tamu</p>
-      <input type="text" id="guestLinkInput" readonly>
-      <div class="modal-buttons">
-        <button id="copyBtn">Salin</button>
-        <button id="shareBtn">Bagikan</button>
-      </div>
-    </div>
+    <div class="modal-content"><p class="modal-title">Bagikan Link Tamu</p><input type="text" id="guestLinkInput" readonly><div class="modal-buttons"><button id="copyBtn">Salin</button><button id="shareBtn">Bagikan</button></div></div>
+  </div>
+  
+  <div id="setupModal" class="modal-overlay">
+    <div class="modal-content"><p class="modal-title">Selamat Datang di Obscura!</p><p style="margin-bottom: 25px;">Anda belum mengatur Nama dan ID. Klik tombol di bawah untuk mengaturnya.</p><button id="goToSettingsBtn">Atur Identitas</button></div>
   </div>
   
   <script type="module">
-    // PERBAIKAN: Menambahkan fungsi-fungsi yang dibutuhkan untuk query
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -157,8 +111,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // Variabel Elemen DOM
+    const setupModal = document.getElementById('setupModal');
+    const goToSettingsBtn = document.getElementById('goToSettingsBtn');
     const guestLinkBtn = document.getElementById('guestLinkBtn');
-    const disconnectGuestBtn = document.getElementById('disconnectGuestBtn'); // Tombol baru
+    const disconnectGuestBtn = document.getElementById('disconnectGuestBtn'); 
     const info = document.getElementById('connectionInfo');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const receiverLink = document.getElementById('receiver');
@@ -174,73 +131,86 @@
     
     let currentConnectionType = null;
 
-    function setMenuState(connectionType, partnerCode = null) {
-      currentConnectionType = connectionType;
-      // Sembunyikan semua tombol menu khusus koneksi secara default
-      disconnectGuestBtn.style.display = 'none';
-      guestLinkBtn.style.display = 'flex'; // Tampilkan tombol link tamu secara default
+    // --- Definisi Fungsi ---
 
-      if (connectionType === 'partner') {
-        info.style.color = '#4caf50';
-        info.textContent = partnerCode;
-        receiverLink.classList.remove('disabled');
-        senderLink.classList.remove('disabled');
-        guestLinkBtn.style.display = 'none'; // Sembunyikan saat terhubung dgn partner
-      } else if (connectionType === 'guest') {
-        info.style.color = '#4caf50';
-        info.textContent = "Tamu Terhubung";
-        receiverLink.classList.remove('disabled');
-        senderLink.classList.add('disabled');
-        guestLinkBtn.style.display = 'none'; // Sembunyikan saat tamu terhubung
-        disconnectGuestBtn.style.display = 'flex'; // Tampilkan tombol putuskan tamu
-      } else { // Tidak terhubung
-        info.style.color = '#999';
-        info.textContent = localStorage.getItem('myCode') ? `Tidak Tersambung` : 'ID Belum Diatur';
-        receiverLink.classList.add('disabled');
-        senderLink.classList.add('disabled');
-      }
+    function showSetupModal() {
+        setupModal.classList.add('visible');
+    }
+
+    function setMenuState(connectionType, partnerData = null) {
+        currentConnectionType = connectionType;
+        disconnectGuestBtn.style.display = 'none';
+        guestLinkBtn.style.display = 'flex'; 
+
+        if (connectionType === 'partner') {
+            info.style.color = '#4caf50';
+            info.textContent = partnerData.name ? `${partnerData.name} (${partnerData.id})` : partnerData.id;
+            receiverLink.classList.remove('disabled');
+            senderLink.classList.remove('disabled');
+            guestLinkBtn.style.display = 'none';
+        } else if (connectionType === 'guest') {
+            info.style.color = '#4caf50';
+            info.textContent = "Tamu Terhubung";
+            receiverLink.classList.remove('disabled');
+            senderLink.classList.add('disabled');
+            guestLinkBtn.style.display = 'none';
+            disconnectGuestBtn.style.display = 'flex';
+        } else {
+            info.style.color = '#999';
+            info.textContent = `Tidak Tersambung`;
+            receiverLink.classList.add('disabled');
+            senderLink.classList.add('disabled');
+        }
     }
 
     function initializeAppLogic() {
+        const myCode = localStorage.getItem('myCode');
+        
+        if (!myCode) {
+            showSetupModal();
+            document.querySelectorAll('.menu-item').forEach(item => {
+                const isGuestBtn = item.id === 'guestLinkBtn';
+                if (!isGuestBtn) item.classList.add('disabled');
+            });
+            return;
+        }
+
         updateUserCodeDisplay();
         setMenuState(null);
 
-        const myCode = localStorage.getItem('myCode');
-        if (myCode) {
-            // Listener untuk permintaan koneksi partner
-            const requestRef = ref(db, `connections/${myCode}/requestFrom`);
-            onValue(requestRef, (snap) => {
-                const requesterCode = snap.val();
-                if (requesterCode && !currentConnectionType) { showRequestModal(requesterCode); }
-            });
+        onValue(ref(db, `connections/${myCode}/requestFrom`), async (snap) => {
+            const requesterCode = snap.val();
+            if (requesterCode && !currentConnectionType) { 
+                const requesterSnap = await get(ref(db, `users/${requesterCode}`));
+                const requesterName = requesterSnap.exists() ? requesterSnap.val().name : requesterCode;
+                showRequestModal(requesterCode, requesterName); 
+            }
+        });
 
-            // Listener untuk koneksi partner yang sudah aktif
-            const partnerRef = ref(db, `connections/${myCode}/partner`);
-            onValue(partnerRef, (snap) => {
-                const partnerCode = snap.val();
-                if (partnerCode) {
-                    localStorage.setItem('accompliceCode', partnerCode);
-                    setMenuState('partner', partnerCode);
-                } else if (currentConnectionType === 'partner') {
+        onValue(ref(db, `connections/${myCode}/partner`), async (snap) => {
+            const partnerCode = snap.val();
+            if (partnerCode) {
+                const partnerSnap = await get(ref(db, `users/${partnerCode}`));
+                const partnerData = { id: partnerCode, name: partnerSnap.exists() ? partnerSnap.val().name : null };
+                localStorage.setItem('accompliceCode', partnerCode);
+                setMenuState('partner', partnerData);
+            } else if (currentConnectionType === 'partner') {
+                localStorage.removeItem('accompliceCode');
+                setMenuState(null);
+            }
+        });
+
+        onValue(ref(db, `guestConnections/${myCode}`), (snap) => {
+            if (currentConnectionType !== 'partner') {
+                if (snap.exists()) {
+                    localStorage.setItem('accompliceCode', 'GUEST');
+                    setMenuState('guest');
+                } else if (currentConnectionType === 'guest') {
                     localStorage.removeItem('accompliceCode');
                     setMenuState(null);
                 }
-            });
-
-            // Listener untuk koneksi tamu
-            const guestRef = ref(db, `guestConnections/${myCode}`);
-            onValue(guestRef, (snap) => {
-                if (currentConnectionType !== 'partner') {
-                    if (snap.exists()) {
-                        localStorage.setItem('accompliceCode', 'GUEST');
-                        setMenuState('guest');
-                    } else if (currentConnectionType === 'guest') {
-                        localStorage.removeItem('accompliceCode');
-                        setMenuState(null);
-                    }
-                }
-            });
-        }
+            }
+        });
     }
     
     function showToast(message) {
@@ -255,86 +225,34 @@
         }, 3000);
     }
 
-    // PERBAIKAN: Menggunakan API Clipboard modern
     async function copyToClipboard(text) {
         if (!navigator.clipboard) {
-            // Fallback untuk browser sangat lama
             const textArea = document.createElement("textarea");
             textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
+            textArea.style.position="fixed"; textArea.style.left="-9999px";
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            try {
-                document.execCommand('copy');
-                showToast("Link Tamu telah disalin!");
-            } catch (err) {
-                console.error('Gagal menyalin link (fallback): ', err);
-                showToast("Gagal menyalin link.");
-            }
+            try { document.execCommand('copy'); showToast("Link Tamu telah disalin!"); } catch (err) { showToast("Gagal menyalin link."); }
             document.body.removeChild(textArea);
             return;
         }
-        try {
-            await navigator.clipboard.writeText(text);
-            showToast("Link Tamu telah disalin!");
-        } catch (err) {
-            console.error('Gagal menyalin link: ', err);
-            showToast("Gagal menyalin link.");
-        }
+        try { await navigator.clipboard.writeText(text); showToast("Link Tamu telah disalin!"); } catch (err) { showToast("Gagal menyalin link."); }
     }
-
-    // PERBAIKAN: Membersihkan token lama sebelum membuat yang baru
-    guestLinkBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const myCode = localStorage.getItem('myCode');
-        if (!myCode) {
-            alert("Anda harus memiliki ID terlebih dahulu. Atur di halaman Settings.");
-            return;
-        }
-
-        try {
-            const tokensRef = ref(db, 'guestTokens');
-            const userTokensQuery = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
-            const snapshot = await get(userTokensQuery);
-            if (snapshot.exists()) {
-                const cleanupPromises = [];
-                snapshot.forEach((child) => { cleanupPromises.push(remove(child.ref)); });
-                await Promise.all(cleanupPromises);
-            }
-        } catch (error) {
-            console.error("Gagal membersihkan token lama:", error);
-        }
-
-        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-        const guestTokenRef = ref(db, `guestTokens/${token}`);
-        await set(guestTokenRef, { hostId: myCode, createdAt: Date.now() });
-        const guestUrl = `${window.location.origin}${window.location.pathname.replace('main.html', '')}guest.html?token=${token}`;
-        showShareModal(guestUrl);
-    });
-
-    // FUNGSI BARU: Untuk tombol putuskan tamu
-    disconnectGuestBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const myCode = localStorage.getItem('myCode');
-        if(myCode) {
-            const guestConnectionRef = ref(db, `guestConnections/${myCode}`);
-            remove(guestConnectionRef);
-        }
-    });
 
     function updateUserCodeDisplay() {
         const myCode = localStorage.getItem('myCode');
-        if (myCode) { userCodeDisplay.textContent = `ID : ${myCode}`; } 
-        else { userCodeDisplay.textContent = 'ID Belum Diatur'; }
+        const myName = localStorage.getItem('myName');
+        if (myCode && myName) userCodeDisplay.textContent = `${myName} (${myCode})`;
+        else if (myCode) userCodeDisplay.textContent = `ID: ${myCode}`;
+        else userCodeDisplay.textContent = 'Identitas Belum Diatur';
     }
 
     function hideRequestModal() { requestModal.classList.remove('visible'); }
 
-    function showRequestModal(requesterCode) {
+    function showRequestModal(requesterCode, requesterName = 'Pengguna') {
         const myCode = localStorage.getItem('myCode');
-        requestMessage.textContent = `Pengguna ${requesterCode} ingin terkoneksi`;
+        requestMessage.textContent = `${requesterName} (${requesterCode}) ingin terkoneksi`;
         requestModal.classList.add('visible');
         acceptBtn.onclick = async () => {
             if (!myCode || !requesterCode) return;
@@ -355,14 +273,46 @@
         guestLinkInput.value = url;
         shareModal.classList.add('visible');
     }
+    
+    // --- Event Listeners ---
+
+    goToSettingsBtn.addEventListener('click', () => {
+        window.location.href = 'api.html';
+    });
+    
+    guestLinkBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const myCode = localStorage.getItem('myCode');
+        if(!myCode) { showSetupModal(); return; }
+        
+        try {
+            const tokensRef = ref(db, 'guestTokens');
+            const q = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
+            const snapshot = await get(q);
+            if (snapshot.exists()) {
+                const promises = [];
+                snapshot.forEach(child => { promises.push(remove(child.ref)); });
+                await Promise.all(promises);
+            }
+        } catch (error) { console.error("Gagal membersihkan token lama:", error); }
+        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
+        await set(ref(db, `guestTokens/${token}`), { hostId: myCode, createdAt: Date.now() });
+        showShareModal(`${location.origin}${location.pathname.replace('main.html','')}guest.html?token=${token}`);
+    });
+
+    disconnectGuestBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const myCode = localStorage.getItem('myCode');
+        if(myCode) remove(ref(db, `guestConnections/${myCode}`));
+    });
 
     window.addEventListener('storage', (event) => {
-        if (event.key === 'myCode') { updateUserCodeDisplay(); }
+        if (event.key === 'myCode' || event.key === 'myName') {
+            location.reload();
+        }
     });
 
-    copyBtn.addEventListener('click', () => {
-        copyToClipboard(guestLinkInput.value);
-    });
+    copyBtn.addEventListener('click', () => copyToClipboard(guestLinkInput.value));
 
     shareBtn.addEventListener('click', async () => {
         const linkToShare = guestLinkInput.value;
@@ -385,6 +335,7 @@
     requestModal.addEventListener('click', (e) => { if (e.target === requestModal) hideRequestModal(); });
     shareModal.addEventListener('click', (e) => { if (e.target === shareModal) hideShareModal(); });
 
+    // --- Inisialisasi Halaman ---
     initializeAppLogic();
   </script>
 </body>
