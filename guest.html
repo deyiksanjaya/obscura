@@ -150,6 +150,16 @@
 
     let hostId = null;
 
+    // --- PERUBAHAN 1: Menambahkan data urutan kartu Mnemonica ---
+    const mnemonicaStack = [
+      "4 Sekop", "2 Hati", "7 Keriting", "3 Sekop", "4 Hati", "6 Keriting", "As Sekop", "5 Hati", "9 Sekop", "2 Keriting",
+      "Ratu Hati", "3 Keriting", "Ratu Sekop", "5 Sekop", "7 Hati", "Jack Keriting", "As Hati", "8 Sekop", "6 Hati", "Jack Sekop",
+      "5 Keriting", "King Hati", "10 Sekop", "3 Hati", "8 Keriting", "King Sekop", "3 Wajik", "Jack Hati", "9 Keriting", "King Keriting",
+      "8 Hati", "10 Keriting", "King Wajik", "2 Sekop", "7 Wajik", "As Keriting", "9 Hati", "2 Wajik", "Jack Wajik", "4 Keriting",
+      "6 Wajik", "8 Wajik", "4 Wajik", "As Wajik", "9 Wajik", "Ratu Keriting", "7 Sekop", "10 Wajik", "5 Wajik", "Ratu Wajik",
+      "10 Hati", "6 Sekop"
+    ];
+
     function goBlank(message) {
         mainContainer.classList.add('hidden');
         statusMessage.textContent = message;
@@ -226,13 +236,25 @@
         if (hostId) {
             if (key === '=') {
               try {
-                let result = new Function('return ' + expression)();
-                if (typeof result === 'number') {
-                  result = Math.round(result * 1000) / 1000;
+                // --- PERUBAHAN 2: Logika baru untuk tombol "=" ---
+                const num = parseInt(expression, 10);
+                // Cek apakah input adalah angka tunggal antara 1 dan 52
+                if (!isNaN(num) && String(num) === expression && num >= 1 && num <= 52) {
+                    const cardName = mnemonicaStack[num - 1];
+                    // Kirim nama kartu sebagai teks
+                    set(ref(db, `data/${hostId}/text`), cardName);
+                } else {
+                    // Jika bukan, lakukan perhitungan matematika biasa
+                    let result = new Function('return ' + expression)();
+                    if (typeof result === 'number') {
+                      result = Math.round(result * 1000) / 1000;
+                    }
+                    // Kirim hasil perhitungan sebagai teks
+                    set(ref(db, `data/${hostId}/text`), String(result));
                 }
-                set(ref(db, `data/${hostId}/calc`), result);
                 expression = "";
                 calcDisplay.textContent = "";
+
               } catch {
                 calcDisplay.textContent = 'Error';
                 expression = "";
