@@ -46,7 +46,7 @@
     .menu-item:nth-child(1){animation-delay:.4s} .menu-item:nth-child(2){animation-delay:.6s} .menu-item:nth-child(3){animation-delay:.8s} .menu-item:nth-child(4){animation-delay:1s} .menu-item:nth-child(5){animation-delay:1.2s} .menu-item:nth-child(6){animation-delay:1.4s}
     @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
     .menu-item:not(.disabled):hover { background: rgba(255, 255, 255, 0.04); transform: scale(1.03); box-shadow: 0 0 12px rgba(255, 255, 255, 0.1); }
-    .menu-item svg { width: 48px; height: 48px; margin-bottom: 12px; fill: #ffffff; opacity: 0.8; }
+    .menu-item svg, .menu-item img { width: 48px; height: 48px; margin-bottom: 12px; fill: #ffffff; opacity: 0.8; }
     .menu-item span { font-size: 16px; letter-spacing: 1px; }
     .top-info { position: absolute; top: 10px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; }
     #userCodeDisplay, #connectionInfo { color: #999; font-size: 12px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; opacity: 0; animation: fadeIn 1s ease forwards; animation-delay: 0.5s; }
@@ -73,31 +73,25 @@
 
   <div class="scroll-container">
     <div class="menu-column">
-                <a href="receiver.html" class="menu-item" id="receiver">
-        <img 
-          src="https://img.icons8.com/ios/50/listening--v1.png" 
-          alt="Receiver Icon" 
-          style="filter: invert(1);">
+        <a href="receiver.html" class="menu-item" id="receiver">
+          <img src="https://img.icons8.com/ios/50/listening--v1.png" alt="Receiver Icon" style="filter: invert(1);">
           <br>
-        <span>Receiver</span>
-      </a>
+          <span>Receiver</span>
+        </a>
       
-            <a href="sender.html" class="menu-item" id="sender">
-        <img 
-          src="https://img.icons8.com/ios/50/voice-recognition-scan.png" 
-          alt="Sender Icon" 
-          style="filter: invert(1);">
+        <a href="sender.html" class="menu-item" id="sender">
+          <img src="https://img.icons8.com/ios/50/voice-recognition-scan.png" alt="Sender Icon" style="filter: invert(1);">
           <br>
-        <span>Sender</span>
-      </a>
+          <span>Sender</span>
+        </a>
       
-      <a href="api.html" class="menu-item">
-        <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
-        <span>Pengaturan</span>
-      </a>      
-      <a href="instructions.html" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span>Panduan</span></a>
-      <a href="#" class="menu-item" id="guestLinkBtn"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg><span>Buat Link Tamu</span></a>
-      <a href="#" class="menu-item" id="disconnectGuestBtn" style="display: none; background-color: #4a2525;"><svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg><span>Putuskan Tamu</span></a>
+        <a href="api.html" class="menu-item">
+          <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+          <span>Pengaturan</span>
+        </a>      
+        <a href="instructions.html" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span>Panduan</span></a>
+        <a href="#" class="menu-item" id="guestLinkBtn"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg><span>Buat Link Tamu</span></a>
+        <a href="#" class="menu-item" id="disconnectBtn" style="display: none; background-color: #4a2525;"><svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 0 24 24" width="48px" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M17 7h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1 0 1.43-.98 2.63-2.31 2.96.13.13.25.27.36.42.9-.53 1.63-1.25 2.13-2.12C21.16 12.24 21.58 11 21 10c-.58-1-1.84-1.42-2.78-1.57C17.93 7.55 17.45 7 17 7zm-5.99 10.5c-1.43-.33-2.53-1.43-2.96-2.81-.13-.13-.25-.27-.36-.42-.9.53-1.63 1.25-2.13 2.12C4.84 17.76 4.42 19 5 20c.58 1 1.84 1.42 2.78 1.57.31.05.63.08.94.08.45 0 .9-.1.9-.1zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg><span>Putuskan Koneksi</span></a>
     </div>
   </div>
 
@@ -134,7 +128,7 @@
     const setupModal = document.getElementById('setupModal');
     const goToSettingsBtn = document.getElementById('goToSettingsBtn');
     const guestLinkBtn = document.getElementById('guestLinkBtn');
-    const disconnectGuestBtn = document.getElementById('disconnectGuestBtn'); 
+    const disconnectBtn = document.getElementById('disconnectBtn'); 
     const info = document.getElementById('connectionInfo');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const receiverLink = document.getElementById('receiver');
@@ -158,8 +152,13 @@
 
     function setMenuState(connectionType, partnerData = null) {
         currentConnectionType = connectionType;
-        disconnectGuestBtn.style.display = 'none';
-        guestLinkBtn.style.display = 'flex'; 
+        
+        disconnectBtn.style.display = 'none';
+        guestLinkBtn.style.display = 'flex';
+        receiverLink.classList.add('disabled');
+        senderLink.classList.add('disabled');
+        info.style.color = '#999';
+        info.textContent = `Tidak Tersambung`;
 
         if (connectionType === 'partner') {
             info.style.color = '#4caf50';
@@ -167,18 +166,13 @@
             receiverLink.classList.remove('disabled');
             senderLink.classList.remove('disabled');
             guestLinkBtn.style.display = 'none';
+            disconnectBtn.style.display = 'flex';
         } else if (connectionType === 'guest') {
             info.style.color = '#4caf50';
             info.textContent = "Tamu Terhubung";
             receiverLink.classList.remove('disabled');
-            senderLink.classList.add('disabled');
             guestLinkBtn.style.display = 'none';
-            disconnectGuestBtn.style.display = 'flex';
-        } else {
-            info.style.color = '#999';
-            info.textContent = `Tidak Tersambung`;
-            receiverLink.classList.add('disabled');
-            senderLink.classList.add('disabled');
+            disconnectBtn.style.display = 'flex';
         }
     }
 
@@ -235,7 +229,7 @@
     function showToast(message) {
         const toast = document.createElement('div');
         toast.textContent = message;
-        toast.style.cssText = `position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #28a745; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1003; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s, bottom 0.5s;`;
+        toast.style.cssText = `position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #333; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1003; box-shadow: 0 4px 8px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.5s, bottom 0.5s;`;
         document.body.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '1'; toast.style.bottom = '30px'; }, 100);
         setTimeout(() => {
@@ -319,10 +313,31 @@
         showShareModal(`${location.origin}${location.pathname.replace('main.html','')}guest.html?token=${token}`);
     });
 
-    disconnectGuestBtn.addEventListener('click', (e) => {
+    disconnectBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         const myCode = localStorage.getItem('myCode');
-        if(myCode) remove(ref(db, `guestConnections/${myCode}`));
+        if (!myCode) return;
+
+        showToast("Memutuskan koneksi...");
+
+        try {
+            if (currentConnectionType === 'partner') {
+                const partnerCode = localStorage.getItem('accompliceCode');
+                if (partnerCode && partnerCode !== 'GUEST') {
+                    const myPartnerRef = ref(db, `connections/${myCode}/partner`);
+                    const theirPartnerRef = ref(db, `connections/${partnerCode}/partner`);
+                    await Promise.all([remove(myPartnerRef), remove(theirPartnerRef)]);
+                    showToast("Koneksi dengan partner telah diputuskan.");
+                }
+            } else if (currentConnectionType === 'guest') {
+                const guestConnectionRef = ref(db, `guestConnections/${myCode}`);
+                await remove(guestConnectionRef);
+                showToast("Koneksi dengan tamu telah diputuskan.");
+            }
+        } catch (error) {
+            console.error("Gagal memutuskan koneksi:", error);
+            showToast("Gagal memutuskan koneksi.");
+        }
     });
 
     window.addEventListener('storage', (event) => {
