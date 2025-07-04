@@ -11,19 +11,31 @@
   <title>OBSCURA - Pengaturan</title>
   <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;padding:0;font-family:'Cardo',serif;background:radial-gradient(ellipse at center,#111 0%,#000 100%);color:#e0e0e0}
-    section{padding:20px;border-bottom:1px solid rgba(255,255,255,.1)}
-    input,button{width:100%;box-sizing:border-box;font-family:'Cardo',serif;padding:12px;margin-top:8px;background:#111;border:1px solid #444;color:#e0e0e0;border-radius:5px;display:block}
-    input:disabled{background-color:#222;cursor:not-allowed}
-    button{cursor:pointer}
-    button:hover{background-color:#222}
-    #popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);padding:20px 30px;border-radius:12px;font-family:'Cardo',serif;font-size:18px;color:#e0e0e0;box-shadow:0 0 20px rgba(255,255,255,.05);backdrop-filter:blur(4px);z-index:999;opacity:0;pointer-events:none;transition:opacity .5s ease;text-align:center}
-    #popup.show{opacity:1;pointer-events:auto}
-    .status-text{font-size:.9em;color:#888;margin-top:4px;min-height:1em}
+    body { margin: 0; padding: 0; font-family: 'Cardo', serif; background: radial-gradient(ellipse at center, #111 0%, #000 100%); color: #e0e0e0; }
+    section { padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, .1); }
+    h2 { margin-top: 0; }
+    input, button { width: 100%; box-sizing: border-box; font-family: 'Cardo', serif; padding: 12px; margin-top: 8px; background: #111; border: 1px solid #444; color: #e0e0e0; border-radius: 5px; display: block; }
+    input:disabled { background-color: #222; cursor: not-allowed; }
+    button { cursor: pointer; transition: background-color 0.3s; }
+    button:hover { background-color: #222; }
+    .status-text { font-size: .9em; color: #888; margin-top: 4px; min-height: 1em; }
+    
+    /* Popup Notifikasi */
+    #popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); padding: 12px 25px; border-radius: 8px; font-family: 'Cardo', serif; font-size: 16px; color: #e0e0e0; box-shadow: 0 4px 20px rgba(0, 0, 0, .4); backdrop-filter: blur(5px); z-index: 1001; opacity: 0; pointer-events: none; transition: opacity .5s ease, top .5s ease; text-align: center; }
+    #popup.show { opacity: 1; pointer-events: auto; top: 30px; }
+    
+    /* Modal Konfirmasi */
+    #confirm-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 1000; display: none; }
+    #confirm-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1px solid #444; padding: 25px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5); text-align: center; width: 85%; max-width: 320px; }
+    #confirm-text { margin-bottom: 20px; font-size: 1.1em; line-height: 1.5; }
+    #confirm-buttons { display: flex; gap: 10px; }
+    #confirm-yes, #confirm-no { width: 50%; margin: 0; }
+    #confirm-no { background-color: #555; }
+    #confirm-yes { background-color: #d32f2f; }
   </style>
 </head>
 <body>
-  <section>
+  <section id="identity-section">
     <h2>Identitas Anda</h2>
     <input type="text" id="userName" placeholder="Masukkan nama Anda">
     <div id="nameStatus" class="status-text"></div>
@@ -32,7 +44,7 @@
     <button id="resetCodeBtn" style="display:none; margin-top: 10px;">Ganti Identitas</button>
   </section>
 
-  <section>
+  <section id="partner-section">
     <h2>Partner</h2>
     <input type="text" id="accompliceCode" placeholder="Masukkan ID partner">
     <button id="linkBtn">Kirim Permintaan Koneksi</button>
@@ -55,12 +67,23 @@
     <button id="clearDataBtn" style="margin-top: 12px; background-color: #400; color: #f44336;">Hapus Semua Jejak</button>
   </section>
 
+  <!-- Elemen Notifikasi dan Konfirmasi -->
   <div id="popup"></div>
+  <div id="confirm-modal-overlay">
+    <div id="confirm-modal">
+      <div id="confirm-text"></div>
+      <div id="confirm-buttons">
+        <button id="confirm-yes">Ya</button>
+        <button id="confirm-no">Tidak</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, get, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+    // --- Konfigurasi Firebase (tetap sama) ---
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
       authDomain: "obscurabyheri.firebaseapp.com",
@@ -74,6 +97,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // --- Elemen DOM ---
     const userNameInput = document.getElementById('userName');
     const nameStatus = document.getElementById('nameStatus');
     const codeInput = document.getElementById('uniqueCode');
@@ -86,15 +110,44 @@
     const clearDataBtn = document.getElementById('clearDataBtn');
     const partnerStatus = document.getElementById('partnerStatus');
     const cancelRequestBtn = document.getElementById('cancelRequestBtn');
+    const partnerSection = document.getElementById('partner-section');
+
+    // --- Elemen Modal Konfirmasi ---
+    const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
+    const confirmText = document.getElementById('confirm-text');
+    const confirmYesBtn = document.getElementById('confirm-yes');
+    const confirmNoBtn = document.getElementById('confirm-no');
     
     let isEditMode = false;
+    let confirmCallback = null;
 
+    // --- Fungsi Utilitas (Popup & Konfirmasi) ---
     function showPopup(text, duration = 2500) {
       popup.textContent = text;
       popup.classList.add("show");
       setTimeout(() => popup.classList.remove("show"), duration);
     }
-    
+
+    function showConfirm(text, onConfirm) {
+      confirmText.textContent = text;
+      confirmCallback = onConfirm;
+      confirmModalOverlay.style.display = 'flex';
+    }
+
+    function hideConfirm() {
+      confirmModalOverlay.style.display = 'none';
+      confirmCallback = null;
+    }
+
+    confirmYesBtn.addEventListener('click', () => {
+      if (confirmCallback) {
+        confirmCallback();
+      }
+      hideConfirm();
+    });
+    confirmNoBtn.addEventListener('click', hideConfirm);
+
+    // --- Logika Utama Aplikasi ---
     async function initializePage() {
       const myCode = localStorage.getItem('myCode');
       const myName = localStorage.getItem('myName');
@@ -178,6 +231,9 @@
             codeInput.disabled = true;
             resetBtn.style.display = 'block';
             codeInput.removeEventListener('input', handleNewCodeInput);
+            // Setelah ID baru dibuat, mulai listen ke database
+            listenForPartner(code);
+            listenForSentRequest(code);
         }
     }
 
@@ -197,6 +253,7 @@
                 disconnectBtn.style.display = 'none';
                 partnerStatus.textContent = `Menunggu persetujuan dari ${partnerName}...`;
             } else {
+                // Hanya reset jika tidak ada partner yang terkoneksi
                 if (!localStorage.getItem('accompliceCode')) {
                     accompliceInput.disabled = false;
                     linkBtn.style.display = 'block';
@@ -227,14 +284,22 @@
                 disconnectBtn.style.display = 'block';
 
             } else {
-                if(!isEditMode) accompliceInput.value = '';
-                accompliceInput.disabled = false;
+                // FIX: UI direset saat koneksi terputus, tidak peduli isEditMode
+                accompliceInput.value = '';
+                accompliceInput.disabled = isEditMode; // Tetap disable jika sedang edit mode
                 localStorage.removeItem('accompliceCode');
                 disconnectBtn.style.display = 'none';
+                // Cek apakah ada permintaan terkirim untuk menampilkan tombol yang benar
+                const requestSnap = await get(ref(db, `connections/${myCode}/requestTo`));
+                if (!requestSnap.val()) {
+                    linkBtn.style.display = 'block';
+                    cancelRequestBtn.style.display = 'none';
+                }
             }
         });
     }
 
+    // --- Event Listeners ---
     linkBtn.addEventListener('click', async () => {
         const myCode = localStorage.getItem('myCode');
         const accompliceCode = accompliceInput.value.trim();
@@ -264,23 +329,24 @@
         }
     });
 
-    disconnectBtn.addEventListener('click', async () => {
-        const myCode = localStorage.getItem('myCode');
-        const accompliceCode = localStorage.getItem('accompliceCode');
-        if (!myCode || !accompliceCode) return;
-
-        if (confirm(`Anda yakin ingin memutuskan sambungan dengan partner?`)) {
+    disconnectBtn.addEventListener('click', () => {
+        showConfirm("Anda yakin ingin memutuskan sambungan dengan partner?", async () => {
+            const myCode = localStorage.getItem('myCode');
+            const accompliceCode = localStorage.getItem('accompliceCode');
+            if (!myCode || !accompliceCode) return;
+            
             await remove(ref(db, `connections/${myCode}/partner`));
             await remove(ref(db, `connections/${accompliceCode}/partner`));
             showPopup("Koneksi berhasil diputuskan.");
-        }
+        });
     });
     
-    resetBtn.addEventListener('click', async () => { 
+    resetBtn.addEventListener('click', () => { 
         if (!isEditMode) {
-            if (confirm("Anda yakin ingin mengubah identitas? Ini akan memutuskan koneksi yang ada jika Anda mengubah ID.")) {
+            showConfirm("Anda yakin ingin mengubah identitas? Ini akan memutuskan koneksi aktif.", () => {
                 const currentName = localStorage.getItem('myName');
                 const currentId = localStorage.getItem('myCode');
+                
                 userNameInput.disabled = false;
                 codeInput.disabled = false;
                 userNameInput.value = '';
@@ -289,76 +355,107 @@
                 codeInput.placeholder = `ID saat ini: ${currentId}`;
                 resetBtn.textContent = 'Simpan Perubahan';
                 resetBtn.style.backgroundColor = '#28a745';
+                
+                // FIX: Nonaktifkan bagian partner selama mode edit
+                partnerSection.style.opacity = '0.3';
+                partnerSection.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                
                 isEditMode = true;
-            }
+            });
         } else {
-            const newName = userNameInput.value.trim();
-            const newId = codeInput.value.trim();
-            if (!newName && !newId) {
-                showPopup("Tidak ada perubahan. Setidaknya isi satu kolom.");
-                return;
-            }
-            try {
-                let changesMade = false;
-                const currentName = localStorage.getItem('myName');
-                const currentId = localStorage.getItem('myCode');
+            // Logika untuk menyimpan perubahan
+            showConfirm("Simpan perubahan identitas? Ini tidak bisa dibatalkan.", async () => {
+                const newName = userNameInput.value.trim();
+                const newId = codeInput.value.trim();
+                if (!newName && !newId) {
+                    showPopup("Tidak ada perubahan. Setidaknya isi satu kolom.");
+                    location.reload(); // Reload untuk membatalkan mode edit
+                    return;
+                }
 
-                if (newId && newId !== currentId) {
-                    if (!/^\d{6}$/.test(newId)) { showPopup("ID baru harus 6 digit angka."); return; }
-                    const newIdRef = ref(db, `users/${newId}`);
-                    const snap = await get(newIdRef);
-                    if (snap.exists()) { showPopup("ID baru sudah digunakan. Coba yang lain."); return; }
-                    const oldDataSnap = await get(ref(db, `users/${currentId}`));
-                    if (oldDataSnap.exists()) {
-                        await set(newIdRef, oldDataSnap.val());
-                        await remove(ref(db, `users/${currentId}`));
+                try {
+                    let changesMade = false;
+                    const currentName = localStorage.getItem('myName');
+                    const currentId = localStorage.getItem('myCode');
+                    const accompliceCode = localStorage.getItem('accompliceCode');
+
+                    // Jika ID diubah
+                    if (newId && newId !== currentId) {
+                        if (!/^\d{6}$/.test(newId)) { showPopup("ID baru harus 6 digit angka."); return; }
+                        const newIdRef = ref(db, `users/${newId}`);
+                        const snap = await get(newIdRef);
+                        if (snap.exists()) { showPopup("ID baru sudah digunakan. Coba yang lain."); return; }
+                        
+                        // BUG FIX: Putuskan koneksi partner lama dengan benar
+                        if (accompliceCode) {
+                            await remove(ref(db, `connections/${accompliceCode}/partner`));
+                        }
+
+                        // Pindahkan data user dan hapus data lama
+                        const oldUserSnap = await get(ref(db, `users/${currentId}`));
+                        if (oldUserSnap.exists()) {
+                            const userData = oldUserSnap.val();
+                            // Update nama jika diubah bersamaan dengan ID
+                            userData.name = (newName && newName !== currentName) ? newName : userData.name;
+                            await set(newIdRef, userData);
+                            await remove(ref(db, `users/${currentId}`));
+                        }
+                        
+                        // BUG FIX: Hapus data koneksi lama
+                        await remove(ref(db, `connections/${currentId}`));
+
+                        localStorage.setItem('myCode', newId);
+                        localStorage.removeItem('accompliceCode');
+                        if (newName && newName !== currentName) localStorage.setItem('myName', newName);
+                        changesMade = true;
+
+                    } else if (newName && newName !== currentName) {
+                        // Jika hanya nama yang diubah
+                        await update(ref(db, `users/${currentId}`), { name: newName });
+                        localStorage.setItem('myName', newName);
+                        changesMade = true;
                     }
-                    localStorage.setItem('myCode', newId);
-                    changesMade = true;
-                }
-                const finalId = localStorage.getItem('myCode');
-                if (newName && newName !== currentName) {
-                    await update(ref(db, `users/${finalId}`), { name: newName });
-                    localStorage.setItem('myName', newName);
-                    changesMade = true;
-                }
-                if (changesMade) {
-                    showPopup("Identitas berhasil diperbarui!");
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showPopup("Tidak ada data yang diubah.");
+
+                    if (changesMade) {
+                        showPopup("Identitas berhasil diperbarui!");
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showPopup("Tidak ada data yang diubah.");
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error("Gagal menyimpan perubahan:", error);
+                    showPopup("Terjadi kesalahan saat menyimpan.");
                     location.reload();
                 }
-            } catch (error) {
-                console.error("Gagal menyimpan perubahan:", error);
-                showPopup("Terjadi kesalahan saat menyimpan.");
-            } finally {
-                isEditMode = false;
-            }
+            });
         }
     });
     
-    clearDataBtn.onclick = async () => {
-        if (confirm("TINDAKAN PERMANEN! Ini akan menghapus semua jejak Anda. Lanjutkan?")) {
+    clearDataBtn.onclick = () => {
+        showConfirm("TINDAKAN PERMANEN! Ini akan menghapus semua jejak Anda dari database. Lanjutkan?", async () => {
             const myCode = localStorage.getItem('myCode');
             const accompliceCode = localStorage.getItem('accompliceCode');
             try {
                 if (myCode) {
-                    if (accompliceCode) { await remove(ref(db, `connections/${accompliceCode}`)); }
+                    // BUG FIX: Hanya hapus referensi partner DARI partner, bukan seluruh datanya.
+                    if (accompliceCode) { 
+                        await remove(ref(db, `connections/${accompliceCode}/partner`)); 
+                    }
+                    // Hapus data user dan data koneksi user saat ini
                     await remove(ref(db, `users/${myCode}`));
                     await remove(ref(db, `connections/${myCode}`));
                 }
             } finally {
-                localStorage.removeItem('myCode');
-                localStorage.removeItem('myName');
-                localStorage.removeItem('accompliceCode');
-                localStorage.removeItem('customPresets');
+                // Selalu hapus data lokal sebagai fallback
+                localStorage.clear();
             }
             showPopup("Semua jejak telah dihapus.");
             setTimeout(() => location.reload(), 1500);
-        }
+        });
     };
 
+    // --- Logika Preset ---
     const savePresetBtn = document.getElementById('savePresetBtn');
     const clearPresetBtn = document.getElementById('clearPresetBtn');
     const customPresetInput = document.getElementById('customPresetInput');
@@ -367,15 +464,20 @@
         if(presets.length > 0) {
             localStorage.setItem('customPresets', JSON.stringify(presets));
             showPopup('Preset disimpan!');
+        } else {
+            showPopup('Input kosong, tidak ada yang disimpan.');
         }
     });
     clearPresetBtn.addEventListener('click', () => {
-        localStorage.removeItem('customPresets');
-        customPresetInput.value = '';
-        showPopup('Preset dihapus!');
+        if(localStorage.getItem('customPresets')){
+            localStorage.removeItem('customPresets');
+            customPresetInput.value = '';
+            showPopup('Preset dihapus!');
+        }
     });
     customPresetInput.value = JSON.parse(localStorage.getItem('customPresets') || '[]').join(', ');
     
+    // --- Inisialisasi ---
     initializePage();
   </script>
 </body>
