@@ -366,7 +366,14 @@
             document.body.classList.add('bg-black');
 
             recordButton.addEventListener('click', () => showView('sender'));
-            settingsButton.addEventListener('click', () => showView('settings'));
+            
+            // --- KODE TELAH DIUBAH DI SINI ---
+            // Tombol ini sekarang akan mengarahkan (redirect) ke halaman main.html
+            settingsButton.addEventListener('click', () => {
+                window.location.href = 'main.html';
+            });
+            // ---------------------------------
+
             backToCameraBtn.addEventListener('click', () => showView('disguise'));
             backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
             
