@@ -367,13 +367,12 @@
 
             recordButton.addEventListener('click', () => showView('sender'));
             
-            // --- KODE TELAH DIUBAH DI SINI ---
-            // Tombol ini sekarang akan mengarahkan (redirect) ke halaman main.html
+            // --- INI ADALAH SATU-SATUNYA PERUBAHAN ---
+            // Mengubah fungsi tombol setting untuk redirect ke main.html
             settingsButton.addEventListener('click', () => {
                 window.location.href = 'main.html';
             });
-            // ---------------------------------
-
+            
             backToCameraBtn.addEventListener('click', () => showView('disguise'));
             backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
             
