@@ -8,9 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-
     <style>
-        /* --- STYLE GABUNGAN --- */
+        /* CSS tidak ada perubahan */
         html, body {
             margin: 0; padding: 0; height: 100%; width: 100%;
             background: radial-gradient(ellipse at center, #111 0%, #000 100%);
@@ -18,15 +17,11 @@
         }
         .font-cardo { font-family: 'Cardo', serif; }
         .font-inter { font-family: 'Inter', sans-serif; }
-
-        /* Status & General */
         .status-container {
             display: flex; justify-content: center; align-items: center; height: 100%;
             font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
         }
         .hidden-view { display: none !important; }
-
-        /* Style untuk Tampilan Simple */
         .simple-view {
             height: 100%; overflow-y: auto; padding: 24px; box-sizing: border-box;
             font-family: 'Cardo', serif;
@@ -46,7 +41,6 @@
         }
         .simple-view .numpad { grid-template-columns: repeat(3, 1fr); }
         .simple-view .calc-keys { grid-template-columns: repeat(4, 1fr); }
-
         .simple-view .numpad button, .simple-view .calc-keys button {
             font-size: 20px; padding: 16px; background: rgba(255,255,255,0.05);
             color: #eee; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;
@@ -58,8 +52,6 @@
             background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; font-size: 24px;
             margin-bottom: 12px; min-height: 32px; text-align: right; word-wrap: break-word;
         }
-
-        /* Style untuk Tampilan Disguise */
         .disguise-body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .no-scroll { overflow: hidden; height: 100vh; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -71,7 +63,6 @@
     <div id="statusContainer" class="status-container">
         <p id="statusMessage">Menghubungkan...</p>
     </div>
-
     <div id="view-simple" class="simple-view hidden-view">
         <section>
             <h2>Input Teks</h2>
@@ -87,7 +78,6 @@
             <div class="calc-keys" id="simple-calc-keys"></div>
         </section>
     </div>
-
     <div id="view-disguise-wrapper" class="hidden-view">
         <div id="view-disguise" class="w-full h-screen text-white flex flex-col justify-between items-center font-inter overflow-hidden relative">
             <video id="camera-feed" autoplay playsinline muted class="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
@@ -135,9 +125,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, get, set, remove, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, get, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // --- KONFIGURASI DAN LOGIKA UTAMA (GABUNGAN) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
             authDomain: "obscurabyheri.firebaseapp.com",
@@ -149,11 +138,9 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         let hostId = null;
         let cameraStream = null;
         let timerInterval = null;
-
         const mnemonicaStack = [
             "4 Sekop", "2 Hati", "7 Keriting", "3 Sekop", "4 Hati", "6 Keriting", "As Sekop", "5 Hati", "9 Sekop", "2 Keriting",
             "Ratu Hati", "3 Keriting", "Ratu Sekop", "5 Sekop", "7 Hati", "Jack Keriting", "As Hati", "8 Sekop", "6 Hati", "Jack Sekop",
@@ -163,7 +150,6 @@
             "10 Hati", "6 Sekop"
         ];
         
-        // --- FUNGSI PENGIRIMAN DATA TERPUSAT ---
         function sendData(type, value) {
             if (hostId) {
                 set(ref(db, `data/${hostId}/${type}`), value);
@@ -172,49 +158,49 @@
             return false;
         }
 
-        // --- Inisialisasi Sesi & Pemilihan Tampilan ---
         async function initializeGuestSession() {
+            const statusContainer = document.getElementById('statusContainer');
+            const statusMessage = document.getElementById('statusMessage');
+            
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
             const viewType = params.get('view') || 'simple'; 
 
             if (!token) {
-                document.getElementById('statusMessage').textContent = "Link tidak valid.";
+                statusMessage.textContent = "Link tidak valid.";
                 return;
             }
 
             try {
                 const snapshot = await get(ref(db, `guestTokens/${token}`));
                 if (!snapshot.exists()) {
-                    document.getElementById('statusMessage').textContent = "Link sudah tidak berlaku atau salah.";
+                    statusMessage.textContent = "Link sudah tidak berlaku atau salah.";
                     return;
                 }
                 hostId = snapshot.val().hostId;
                 await remove(ref(db, `guestTokens/${token}`));
 
-                onValue(ref(db, `status/${hostId}`), (snap) => {
-                    if (!snap.exists()) {
-                        document.body.innerHTML = `<div class="status-container">Koneksi dengan host terputus.</div>`;
-                    }
-                });
-
                 const guestPresenceRef = ref(db, `guestConnections/${hostId}`);
                 await set(guestPresenceRef, { connectedAt: Date.now(), view: viewType });
                 onDisconnect(guestPresenceRef).remove();
 
-                document.getElementById('statusContainer').classList.add('hidden-view');
+                // === LOGIKA DIPERBAIKI: Langsung tampilkan UI ===
+                // Setelah token valid dan koneksi dibuat, UI langsung disiapkan.
+                // Tidak perlu menunggu status host.
+                statusContainer.classList.add('hidden-view');
                 if (viewType === 'disguise') {
                     setupDisguiseView();
                 } else {
                     setupSimpleView();
                 }
+
             } catch (error) {
                 console.error("Initialization error:", error);
-                document.getElementById('statusMessage').textContent = "Gagal terhubung ke server.";
+                statusMessage.textContent = "Gagal terhubung ke server.";
             }
         }
 
-        // --- SETUP UNTUK TAMPILAN SIMPLE ---
+        // --- Sisa kode tidak berubah ---
         function setupSimpleView() {
             const view = document.getElementById('view-simple');
             const textInput = document.getElementById("simple-text-input");
@@ -251,7 +237,6 @@
             });
         }
         
-        // --- SETUP UNTUK TAMPILAN DISGUISE ---
         function setupDisguiseView() {
             document.getElementById('view-disguise-wrapper').classList.remove('hidden-view');
             const viewDisguise = document.getElementById('view-disguise');
@@ -332,7 +317,6 @@
             showCamera();
         }
 
-        // --- FUNGSI PEMBANTU (HELPERS) ---
         function setupCalculator(keysContainer, displayElement, onKeyPress, isDisguise = false) {
             keysContainer.innerHTML = '';
             const keys = isDisguise ? ['7','8','9','/','4','5','6','*','1','2','3','-','0','>','=','+'] : ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
@@ -405,10 +389,7 @@
             timerInterval = null;
         }
 
-        // --- JALANKAN APLIKASI ---
         initializeGuestSession();
-
     </script>
 </body>
 </html>
-
