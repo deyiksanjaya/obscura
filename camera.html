@@ -148,7 +148,6 @@
         // --- Variabel Global & State ---
         let stream = null;
         let timerInterval = null;
-        let pressTimeout = null;
         let calcExpression = "";
         let lastSenderScrollPosition = 0;
         const kartuMap = { 1: '4 Keriting', 2: '2 Hati', 3: '7 Wajik', 4: '3 Keriting', 5: '4 Hati', 6: '6 Wajik', 7: 'Ace Sekop', 8: '5 Hati', 9: '9 Sekop', 10: '2 Sekop', 11: 'Queen Hati', 12: '3 Wajik', 13: 'Queen Keriting', 14: '8 Hati', 15: '6 Sekop', 16: '5 Sekop', 17: '9 Hati', 18: 'King Keriting', 19: '2 Wajik', 20: 'Jack Hati', 21: '3 Sekop', 22: '8 Sekop', 23: '6 Hati', 24: '10 Keriting', 25: '5 Wajik', 26: 'King Wajik', 27: '2 Keriting', 28: '3 Hati', 29: '8 Wajik', 30: '5 Keriting', 31: 'King Sekop', 32: 'Jack Wajik', 33: '8 Keriting', 34: '10 Sekop', 35: 'King Hati', 36: 'Jack Keriting', 37: '7 Sekop', 38: '10 Hati', 39: 'Ace Wajik', 40: '4 Sekop', 41: '7 Hati', 42: '4 Wajik', 43: 'Ace Keriting', 44: '9 Keriting', 45: 'Jack Sekop', 46: 'Queen Wajik', 47: '7 Keriting', 48: 'Queen Sekop', 49: '10 Wajik', 50: '6 Keriting', 51: 'Ace Hati', 52: '9 Wajik' };
@@ -254,7 +253,7 @@
         function startTimer() {
             if (timerInterval) return;
             let seconds = 0;
-            timerDisplay.textContent = formatTime(seconds); // Reset timer display
+            timerDisplay.textContent = formatTime(seconds);
             timerInterval = setInterval(() => {
                 seconds++;
                 timerDisplay.textContent = formatTime(seconds);
@@ -370,24 +369,16 @@
         }
 
         // --- Inisialisasi Aplikasi ---
-        // --- PERBAIKAN KUNCI ---
-        // Semua event listener dan inisialisasi dipindahkan ke sini
         document.addEventListener('DOMContentLoaded', () => {
+            // --- PERBAIKAN KUNCI --- Logika disederhanakan dan dibuat andal.
+            
             // Pasang semua event listener
             recordButton.addEventListener('click', () => showView('sender'));
             settingsButton.addEventListener('click', () => showView('settings'));
-            recordButton.addEventListener('mousedown', () => {
-                pressTimeout = setTimeout(() => showView('settings'), 1500);
-            });
-            recordButton.addEventListener('mouseup', () => clearTimeout(pressTimeout));
-            recordButton.addEventListener('touchstart', (e) => {
-                 e.preventDefault();
-                 pressTimeout = setTimeout(() => showView('settings'), 1500);
-            });
-            recordButton.addEventListener('touchend', () => clearTimeout(pressTimeout));
-
+            
             backToCameraBtn.addEventListener('click', () => showView('disguise'));
             backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
+            
             textInput.addEventListener('keydown', (e) => {
                 if (e.key === "Enter" && textInput.value.trim()) {
                     sendToFirebase('text', textInput.value.trim(), true);
