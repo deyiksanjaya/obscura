@@ -1,267 +1,406 @@
-import React, { useState, useEffect, useRef } from 'react';
-// Mengimpor fungsi Firebase Realtime Database
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Obscura - Camera Thumper</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
 
-// --- Konfigurasi Firebase ---
-const firebaseConfig = {
-    apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
-    authDomain: "obscurabyheri.firebaseapp.com",
-    databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "obscurabyheri",
-    storageBucket: "obscurabyheri.appspot.com",
-    messagingSenderId: "866868400960",
-    appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
-};
-
-// Inisialisasi Firebase di luar komponen agar hanya terjadi sekali
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// --- Ikon ---
-const SwitchCameraIcon = () => (<img src="https://img.icons8.com/sf-regular/48/switch-camera.png" alt="Switch Camera" className="w-8 h-8 brightness-0 invert" />);
-const ArrowLeftIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>);
-const FlashOffIcon = () => (<img src="https://img.icons8.com/ios-filled/100/flash-off.png" alt="Flash Off" className="w-6 h-6 brightness-0 invert" />);
-
-
-// --- Komponen Utama Aplikasi ---
-export default function App() {
-    const [mode, setMode] = useState('disguise');
-    const [notification, setNotification] = useState('');
-
-    const showNotification = (message) => {
-        setNotification(message);
-        setTimeout(() => setNotification(''), 1500);
-    };
-
-    const handleSecretGesture = () => setMode('settings');
-
-    switch (mode) {
-        case 'settings':
-            return <SettingsView onBack={() => setMode('disguise')} />;
-        case 'sender':
-            return <SenderView onBack={() => setMode('disguise')} showNotification={showNotification} />;
-        default:
-            return <DisguiseView onTriggerSender={() => setMode('sender')} onSecretGesture={handleSecretGesture} notification={notification} onDirectSend={(signal) => {
-                console.log(`Sinyal Langsung Terkirim: ${signal}`);
-                sendToFirebase('text', signal, showNotification);
-            }} />;
-    }
-}
-
-// Fungsi helper untuk mengirim data ke Firebase, agar bisa dipakai di banyak tempat
-const sendToFirebase = (type, value, showNotificationCallback) => {
-    const myCode = localStorage.getItem('myCode');
-    const accompliceCode = localStorage.getItem('accompliceCode');
-    if (!myCode || !accompliceCode) {
-        showNotificationCallback("Koneksi tidak ditemukan!");
-        return;
-    }
-    set(ref(db, `data/${accompliceCode}/${type}`), value);
-    showNotificationCallback(`'${value}' terkirim`);
-};
-
-
-// --- Tampilan Penyamaran (Kamera Palsu) ---
-function DisguiseView({ onTriggerSender, onSecretGesture, notification, onDirectSend }) {
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
-    const [timer, setTimer] = useState(0);
-    const [pressTimeout, setPressTimeout] = useState(null);
-    
-    const fakeModes = ['CINEMATIC', 'VIDEO', 'PHOTO', 'PORTRAIT', 'PANO'];
-    const [allModes, setAllModes] = useState(fakeModes);
-    const [activeMode, setActiveMode] = useState('VIDEO');
-
-    useEffect(() => {
-        try {
-            const storedPresets = JSON.parse(localStorage.getItem('customPresets') || '[]');
-            setAllModes([...fakeModes, ...storedPresets]);
-        } catch (e) {
-            setAllModes(fakeModes);
+    <style>
+        /* Style dasar dan custom */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Mencegah highlight biru saat disentuh di mobile */
         }
-    }, []); 
-
-    useEffect(() => {
-        async function getCameraStream() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                if (videoRef.current) videoRef.current.srcObject = stream;
-                streamRef.current = stream;
-            } catch (err) { console.error("Error mengakses kamera:", err); }
+        .cardo-font {
+            font-family: 'Cardo', serif;
         }
-        getCameraStream();
-        return () => {
-            if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-black">
+
+    <!-- ====================================================== -->
+    <!-- TAMPILAN 1: PENYAMARAN KAMERA (VIEW UTAMA)             -->
+    <!-- ====================================================== -->
+    <div id="view-disguise" class="w-full h-screen text-white flex flex-col justify-between items-center font-sans overflow-hidden relative">
+        <video id="camera-feed" autoplay playsinline muted class="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
+        
+        <div class="relative z-10 w-full h-full flex flex-col justify-between">
+            <!-- UI ATAS -->
+            <div class="w-full bg-black/30 backdrop-blur-sm pt-4 pb-2">
+                <div class="w-full px-4 flex justify-between items-center text-white text-sm">
+                    <div class="w-1/4 text-left">
+                        <img src="https://img.icons8.com/ios-filled/100/flash-off.png" alt="Flash Off" class="w-6 h-6 brightness-0 invert" />
+                    </div>
+                    <div class="w-1/2 text-center">
+                        <span id="timer-display" class="bg-red-600/80 rounded-md px-2 py-1 font-mono text-base">00:00:00</span>
+                    </div>
+                    <div class="w-1/4 text-right font-sans font-medium">HD • 30</div>
+                </div>
+            </div>
+
+            <!-- Area Kosong di Tengah -->
+            <div class="flex-grow"></div>
+
+            <!-- UI BAWAH / KONTROL -->
+            <div class="w-full bg-black/30 backdrop-blur-sm">
+                <div class="flex flex-col items-center py-3 space-y-3">
+                    <div id="mode-selector-container" class="w-full px-4 overflow-x-auto whitespace-nowrap text-center no-scrollbar">
+                        <!-- Mode selector akan diisi oleh JavaScript -->
+                    </div>
+                    <div class="w-full px-4 flex justify-around items-center">
+                        <div class="w-12 h-12"></div>
+                        <button id="record-button" class="w-20 h-20 bg-white rounded-full flex items-center justify-center transform transition active:scale-90" aria-label="Tombol Aksi Thumper">
+                            <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-white"></div>
+                        </button>
+                        <button id="settings-button" class="text-gray-300 hover:text-white transition-colors p-2 rounded-full">
+                            <img src="https://img.icons8.com/sf-regular/48/switch-camera.png" alt="Switch Camera" class="w-8 h-8 brightness-0 invert" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notifikasi -->
+        <div id="notification-popup" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg shadow-lg z-20 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- TAMPILAN 2: HALAMAN PENGIRIM (SENDER)                  -->
+    <!-- ====================================================== -->
+    <div id="view-sender" class="hidden w-full h-screen text-gray-200 flex-col" style="background: radial-gradient(ellipse at center, #111 0%, #000 100%);">
+        <div id="sender-scroll-area" class="flex-1 overflow-y-auto p-6">
+            <button id="back-to-camera-btn" class="w-full mb-5 py-2.5 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cardo-font">← Kembali ke Kamera</button>
+            
+            <section class="mb-8 pb-5 border-b border-white/10">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Input Teks</h2>
+                <input type="text" id="text-input" placeholder="Ketik dan tekan Enter" class="w-full p-3 text-center bg-white/5 rounded-lg cardo-font" />
+            </section>
+            
+            <section class="mb-8 pb-5 border-b border-white/10">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Input Angka Cepat</h2>
+                <div id="numpad-container" class="grid grid-cols-3 gap-3"></div>
+            </section>
+            
+            <section class="mb-8 pb-5 border-b border-white/10">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Kalkulator & Mnemonica</h2>
+                <div class="bg-transparent rounded-lg">
+                    <div id="calc-display" class="h-14 mb-5 text-4xl text-center font-mono bg-white/5 rounded-lg flex items-center justify-center px-3 overflow-x-auto"></div>
+                    <div id="calc-keys-container" class="grid grid-cols-4 gap-2"></div>
+                </div>
+            </section>
+            
+            <section id="custom-thump-section" class="hidden">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Custom Thump</h2>
+                <div id="custom-preset-container" class="grid grid-cols-3 gap-3"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- TAMPILAN 3: PENGATURAN (PLACEHOLDER)                   -->
+    <!-- ====================================================== -->
+    <div id="view-settings" class="hidden w-full min-h-screen bg-gray-900 text-white p-4 font-sans flex-col">
+        <div class="flex items-center mb-6">
+            <button id="back-from-settings-btn" class="p-2 mr-2 rounded-full hover:bg-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 class="text-2xl font-bold">Pengaturan</h1>
+        </div>
+        <div class="flex-grow bg-gray-800 rounded-lg p-4 flex items-center justify-center">
+            <p class="text-gray-400 text-center">
+                Konfigurasi utama dilakukan di halaman Pengaturan Obscura.
+            </p>
+        </div>
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- LOGIKA JAVASCRIPT                                      -->
+    <!-- ====================================================== -->
+    <script type="module">
+        // Mengimpor fungsi Firebase Realtime Database
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // --- Konfigurasi Firebase ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+            authDomain: "obscurabyheri.firebaseapp.com",
+            databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "obscurabyheri",
+            storageBucket: "obscurabyheri.appspot.com",
+            messagingSenderId: "866868400960",
+            appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
         };
-    }, []);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    useEffect(() => {
-        const interval = setInterval(() => setTimer(prev => prev + 1), 1000);
-        return () => clearInterval(interval);
-    }, []);
+        // --- Variabel Global & State ---
+        let stream = null;
+        let timerInterval = null;
+        let pressTimeout = null;
+        let calcExpression = "";
+        let lastSenderScrollPosition = 0;
+        const kartuMap = { 1: '4 Keriting', 2: '2 Hati', 3: '7 Wajik', 4: '3 Keriting', 5: '4 Hati', 6: '6 Wajik', 7: 'Ace Sekop', 8: '5 Hati', 9: '9 Sekop', 10: '2 Sekop', 11: 'Queen Hati', 12: '3 Wajik', 13: 'Queen Keriting', 14: '8 Hati', 15: '6 Sekop', 16: '5 Sekop', 17: '9 Hati', 18: 'King Keriting', 19: '2 Wajik', 20: 'Jack Hati', 21: '3 Sekop', 22: '8 Sekop', 23: '6 Hati', 24: '10 Keriting', 25: '5 Wajik', 26: 'King Wajik', 27: '2 Keriting', 28: '3 Hati', 29: '8 Wajik', 30: '5 Keriting', 31: 'King Sekop', 32: 'Jack Wajik', 33: '8 Keriting', 34: '10 Sekop', 35: 'King Hati', 36: 'Jack Keriting', 37: '7 Sekop', 38: '10 Hati', 39: 'Ace Wajik', 40: '4 Sekop', 41: '7 Hati', 42: '4 Wajik', 43: 'Ace Keriting', 44: '9 Keriting', 45: 'Jack Sekop', 46: 'Queen Wajik', 47: '7 Keriting', 48: 'Queen Sekop', 49: '10 Wajik', 50: '6 Keriting', 51: 'Ace Hati', 52: '9 Wajik' };
 
-    const formatTime = (totalSeconds) => {
-        const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-        const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-        const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
-    };
+        // --- Seleksi Elemen DOM ---
+        const views = {
+            disguise: document.getElementById('view-disguise'),
+            sender: document.getElementById('view-sender'),
+            settings: document.getElementById('view-settings')
+        };
+        const senderScrollArea = document.getElementById('sender-scroll-area');
+        const cameraFeed = document.getElementById('camera-feed');
+        const timerDisplay = document.getElementById('timer-display');
+        const modeSelectorContainer = document.getElementById('mode-selector-container');
+        const recordButton = document.getElementById('record-button');
+        const settingsButton = document.getElementById('settings-button');
+        const backToCameraBtn = document.getElementById('back-to-camera-btn');
+        const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
+        const notificationPopup = document.getElementById('notification-popup');
+        const textInput = document.getElementById('text-input');
+        const numpadContainer = document.getElementById('numpad-container');
+        const calcDisplay = document.getElementById('calc-display');
+        const calcKeysContainer = document.getElementById('calc-keys-container');
+        const customThumpSection = document.getElementById('custom-thump-section');
+        const customPresetContainer = document.getElementById('custom-preset-container');
 
-    const handlePressStart = () => setPressTimeout(setTimeout(onSecretGesture, 1500));
-    const handlePressEnd = () => clearTimeout(pressTimeout);
-
-    const handleModeClick = (mode) => {
-        setActiveMode(mode);
-        if (!fakeModes.includes(mode)) {
-            onDirectSend(mode);
+        // --- Fungsi Utilitas ---
+        function showNotification(message) {
+            notificationPopup.textContent = message;
+            notificationPopup.classList.remove('opacity-0');
+            setTimeout(() => {
+                notificationPopup.classList.add('opacity-0');
+            }, 1500);
         }
-    };
 
-    return (
-        <div className="w-full h-screen bg-black text-white flex flex-col justify-between items-center font-sans overflow-hidden relative">
-            <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
-            <video ref={videoRef} autoPlay playsInline muted className="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
-            <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                <div className="w-full bg-black/30 backdrop-blur-sm pt-4 pb-2">
-                    <div className="w-full px-4 flex justify-between items-center text-white text-sm">
-                        <div className="w-1/4 text-left"><FlashOffIcon /></div>
-                        <div className="w-1/2 text-center">
-                            <span className="bg-red-600/80 rounded-md px-2 py-1 font-mono text-base">{formatTime(timer)}</span>
-                        </div>
-                        <div className="w-1/4 text-right font-sans font-medium">HD • 30</div>
-                    </div>
-                </div>
-                <div className="flex-grow"></div>
-                <div className="w-full bg-black/30 backdrop-blur-sm">
-                    <div className="flex flex-col items-center py-3 space-y-3">
-                        <div className="w-full px-4 overflow-x-auto whitespace-nowrap text-center no-scrollbar">
-                            {allModes.map(mode => (
-                                <button key={mode} onClick={() => handleModeClick(mode)} className={`inline-block mx-3 py-1 text-xs font-semibold tracking-wider transition-colors duration-200 ${activeMode === mode ? 'text-yellow-400' : 'text-gray-300'}`}>{mode}</button>
-                            ))}
-                        </div>
-                        <div className="w-full px-4 flex justify-around items-center">
-                            <div className="w-12 h-12"></div>
-                            <button onClick={onTriggerSender} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} className="w-20 h-20 bg-white rounded-full flex items-center justify-center transform transition active:scale-90" aria-label="Tombol Aksi Thumper"><div className="w-16 h-16 bg-red-500 rounded-full border-4 border-white"></div></button>
-                            <button onClick={onSecretGesture} className="text-gray-300 hover:text-white transition-colors p-2 rounded-full"><SwitchCameraIcon /></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {notification && (<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg shadow-lg z-20">{notification}</div>)}
-        </div>
-    );
-}
-
-// --- Tampilan Pengirim (SenderView) ---
-function SenderView({ onBack, showNotification }) {
-    const [expression, setExpression] = useState("");
-    const [customPresets, setCustomPresets] = useState([]);
-
-    const kartuMap = { 1: '4 Keriting', 2: '2 Hati', 3: '7 Wajik', 4: '3 Keriting', 5: '4 Hati', 6: '6 Wajik', 7: 'Ace Sekop', 8: '5 Hati', 9: '9 Sekop', 10: '2 Sekop', 11: 'Queen Hati', 12: '3 Wajik', 13: 'Queen Keriting', 14: '8 Hati', 15: '6 Sekop', 16: '5 Sekop', 17: '9 Hati', 18: 'King Keriting', 19: '2 Wajik', 20: 'Jack Hati', 21: '3 Sekop', 22: '8 Sekop', 23: '6 Hati', 24: '10 Keriting', 25: '5 Wajik', 26: 'King Wajik', 27: '2 Keriting', 28: '3 Hati', 29: '8 Wajik', 30: '5 Keriting', 31: 'King Sekop', 32: 'Jack Wajik', 33: '8 Keriting', 34: '10 Sekop', 35: 'King Hati', 36: 'Jack Keriting', 37: '7 Sekop', 38: '10 Hati', 39: 'Ace Wajik', 40: '4 Sekop', 41: '7 Hati', 42: '4 Wajik', 43: 'Ace Keriting', 44: '9 Keriting', 45: 'Jack Sekop', 46: 'Queen Wajik', 47: '7 Keriting', 48: 'Queen Sekop', 49: '10 Wajik', 50: '6 Keriting', 51: 'Ace Hati', 52: '9 Wajik' };
-
-    useEffect(() => {
-        const myCode = localStorage.getItem('myCode');
-        const accompliceCode = localStorage.getItem('accompliceCode');
-        const presets = JSON.parse(localStorage.getItem('customPresets') || '[]');
-        setCustomPresets(presets);
-
-        if (!myCode || !accompliceCode) {
-            showNotification("ID tidak ditemukan. Kembali dan atur di halaman utama.");
-        } else {
-            const myStatusRef = ref(db, `status/${myCode}`);
-            set(myStatusRef, 'sender');
-            onDisconnect(myStatusRef).remove();
-        }
-    }, []);
-    
-    const handleTextSend = (e) => {
-        if (e.key === "Enter" && e.target.value.trim()) {
-            sendToFirebase('text', e.target.value.trim(), showNotification);
-            e.target.value = "";
-        }
-    };
-
-    const handleCalcKeyPress = (key) => {
-        if (key === '>') {
-            setExpression(prev => prev.slice(0, -1));
-            return;
-        }
-        if (key === '=') {
-            try {
-                if (/^\d+$/.test(expression)) { // Mnemonica
-                    const code = parseInt(expression, 10);
-                    const translated = kartuMap[code] || `Kode ${code}`;
-                    sendToFirebase('text', translated, showNotification);
-                } else { // Kalkulator
-                    let result = new Function('return ' + expression)();
-                    if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
-                    sendToFirebase('calc', result, showNotification);
-                }
-                setExpression("");
-            } catch {
-                setExpression("Error");
-                setTimeout(() => setExpression(""), 1000);
+        function sendToFirebase(type, value, autoReturn = false) {
+            const accompliceCode = localStorage.getItem('accompliceCode');
+            if (!accompliceCode) {
+                showNotification("Partner ID tidak ditemukan!");
+                return;
             }
-        } else {
-            setExpression(prev => prev + key);
+            set(ref(db, `data/${accompliceCode}/${type}`), value);
+            showNotification(`'${value}' terkirim`);
+
+            if (autoReturn) {
+                setTimeout(() => {
+                    showView('disguise');
+                }, 400); 
+            }
         }
-    };
 
-    const numpadKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-    const calcKeys = ['7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '>', '=', '+'];
+        // --- Manajemen Tampilan (View) ---
+        function showView(viewName) {
+            if (views.sender.style.display === 'flex') {
+                lastSenderScrollPosition = senderScrollArea.scrollTop;
+            }
 
-    return (
-        <div className="w-full h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
-            <div className="flex-shrink-0 p-4">
-                <button onClick={onBack} className="w-full py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">← Kembali ke Kamera</button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 pt-0">
-                <section className="mb-6">
-                    <h2 className="text-gray-400 mb-3 font-semibold">Input Teks</h2>
-                    <input type="text" onKeyDown={handleTextSend} placeholder="Ketik dan tekan Enter" className="w-full p-3 text-center bg-gray-800 rounded-lg border border-gray-700" />
-                </section>
-                <section className="mb-6">
-                    <h2 className="text-gray-400 mb-3 font-semibold">Input Angka Cepat</h2>
-                    <div className="grid grid-cols-3 gap-3">
-                        {numpadKeys.map(num => <button key={num} onClick={() => sendToFirebase('number', num, showNotification)} className="py-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-xl">{num}</button>)}
-                    </div>
-                </section>
-                <section className="mb-6">
-                    <h2 className="text-gray-400 mb-3 font-semibold">Kalkulator & Mnemonica</h2>
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-3">
-                        <div className="h-12 mb-4 text-4xl text-right font-mono bg-gray-900 rounded-md flex items-center justify-end px-3 overflow-x-auto">{expression || "0"}</div>
-                        <div className="grid grid-cols-4 gap-3">
-                            {calcKeys.map(key => <button key={key} onClick={() => handleCalcKeyPress(key)} className="py-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-xl">{key}</button>)}
-                        </div>
-                    </div>
-                </section>
-                {customPresets.length > 0 && (
-                    <section>
-                        <h2 className="text-gray-400 mb-3 font-semibold">Custom Thump</h2>
-                        <div className="grid grid-cols-3 gap-3">
-                            {customPresets.map(preset => <button key={preset} onClick={() => sendToFirebase('text', preset, showNotification)} className="py-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-base truncate px-2">{preset}</button>)}
-                        </div>
-                    </section>
-                )}
-            </div>
-        </div>
-    );
-}
+            Object.values(views).forEach(view => view.style.display = 'none');
+            views[viewName].style.display = 'flex';
 
-// --- Tampilan Pengaturan (Sangat Disederhanakan) ---
-function SettingsView({ onBack }) {
-    return (
-        <div className="w-full min-h-screen bg-gray-900 text-white p-4 font-sans flex flex-col">
-            <div className="flex items-center mb-6">
-                <button onClick={onBack} className="p-2 mr-2 rounded-full hover:bg-gray-700"><ArrowLeftIcon /></button>
-                <h1 className="text-2xl font-bold">Pengaturan</h1>
-            </div>
-            <div className="flex-grow bg-gray-800 rounded-lg p-4 flex items-center justify-center">
-                <p className="text-gray-400 text-center">
-                    Konfigurasi utama dilakukan di halaman Pengaturan Obscura.
-                </p>
-            </div>
-        </div>
-    );
-}
+            if (viewName === 'disguise') {
+                startCamera();
+                startTimer();
+            } else {
+                stopCamera();
+                stopTimer();
+            }
+            
+            if (viewName === 'sender') {
+                initializeSenderView();
+                requestAnimationFrame(() => {
+                    senderScrollArea.scrollTop = lastSenderScrollPosition;
+                });
+            }
+        }
+
+        // --- Logika Tampilan Penyamaran ---
+        async function startCamera() {
+            if (stream) return;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                cameraFeed.srcObject = stream;
+            } catch (err) {
+                console.error("Error mengakses kamera:", err);
+                alert("Gagal mengakses kamera. Mohon berikan izin.");
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            let seconds = 0;
+            timerDisplay.textContent = formatTime(seconds); // Reset timer display
+            timerInterval = setInterval(() => {
+                seconds++;
+                timerDisplay.textContent = formatTime(seconds);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function populateModeSelector() {
+            const fakeModes = ['CINEMATIC', 'VIDEO', 'PHOTO', 'PORTRAIT', 'PANO'];
+            const customPresets = JSON.parse(localStorage.getItem('customPresets') || '[]');
+            const allModes = [...fakeModes, ...customPresets];
+            let activeMode = 'VIDEO';
+
+            modeSelectorContainer.innerHTML = '';
+            allModes.forEach(mode => {
+                const button = document.createElement('button');
+                button.textContent = mode;
+                button.className = `inline-block mx-3 py-1 text-xs font-semibold tracking-wider transition-colors duration-200 ${activeMode === mode ? 'text-yellow-400' : 'text-gray-300'}`;
+                
+                button.onclick = () => {
+                    const allButtons = modeSelectorContainer.querySelectorAll('button');
+                    allButtons.forEach(btn => btn.className = btn.className.replace('text-yellow-400', 'text-gray-300'));
+                    button.className = button.className.replace('text-gray-300', 'text-yellow-400');
+                    activeMode = mode;
+
+                    if (!fakeModes.includes(mode)) {
+                        sendToFirebase('text', mode, false);
+                    }
+                };
+                modeSelectorContainer.appendChild(button);
+            });
+        }
+
+        // --- Logika Tampilan Sender ---
+        function initializeSenderView() {
+            const myCode = localStorage.getItem('myCode');
+            const accompliceCode = localStorage.getItem('accompliceCode');
+
+            if (!myCode || !accompliceCode) {
+                showNotification("ID tidak ditemukan. Atur di halaman utama.");
+            } else {
+                const myStatusRef = ref(db, `status/${myCode}`);
+                set(myStatusRef, 'sender');
+                onDisconnect(myStatusRef).remove();
+            }
+        }
+        
+        function handleCalcKeyPress(key) {
+            if (key === '>') {
+                calcExpression = calcExpression.slice(0, -1);
+            } else if (key === '=') {
+                try {
+                    if (/^\d+$/.test(calcExpression)) {
+                        const code = parseInt(calcExpression, 10);
+                        const translated = kartuMap[code] || `Kode ${code}`;
+                        sendToFirebase('text', translated, true);
+                    } else {
+                        let result = new Function('return ' + calcExpression)();
+                        if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
+                        sendToFirebase('calc', result, true);
+                    }
+                    calcExpression = "";
+                } catch {
+                    calcExpression = "Error";
+                    setTimeout(() => {
+                        calcExpression = "";
+                        calcDisplay.textContent = "";
+                    }, 1000);
+                }
+            } else {
+                calcExpression += key;
+            }
+            calcDisplay.textContent = calcExpression || "";
+        }
+
+        function createSenderButtons() {
+            numpadContainer.innerHTML = '';
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
+                const btn = document.createElement('button');
+                btn.textContent = num;
+                btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl cardo-font";
+                btn.onclick = () => sendToFirebase('number', num, true);
+                numpadContainer.appendChild(btn);
+            });
+
+            calcKeysContainer.innerHTML = '';
+            ['7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '>', '=', '+'].forEach(key => {
+                const btn = document.createElement('button');
+                btn.textContent = key;
+                btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl cardo-font";
+                btn.onclick = () => handleCalcKeyPress(key);
+                calcKeysContainer.appendChild(btn);
+            });
+
+            customPresetContainer.innerHTML = '';
+            const presets = JSON.parse(localStorage.getItem('customPresets') || '[]');
+            if (presets.length > 0) {
+                customThumpSection.style.display = 'block';
+                presets.forEach(preset => {
+                    const btn = document.createElement('button');
+                    btn.textContent = preset;
+                    btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-base truncate px-2 cardo-font";
+                    btn.onclick = () => sendToFirebase('text', preset, true);
+                    customPresetContainer.appendChild(btn);
+                });
+            } else {
+                customThumpSection.style.display = 'none';
+            }
+        }
+
+        // --- Inisialisasi Aplikasi ---
+        // --- PERBAIKAN KUNCI ---
+        // Semua event listener dan inisialisasi dipindahkan ke sini
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pasang semua event listener
+            recordButton.addEventListener('click', () => showView('sender'));
+            settingsButton.addEventListener('click', () => showView('settings'));
+            recordButton.addEventListener('mousedown', () => {
+                pressTimeout = setTimeout(() => showView('settings'), 1500);
+            });
+            recordButton.addEventListener('mouseup', () => clearTimeout(pressTimeout));
+            recordButton.addEventListener('touchstart', (e) => {
+                 e.preventDefault();
+                 pressTimeout = setTimeout(() => showView('settings'), 1500);
+            });
+            recordButton.addEventListener('touchend', () => clearTimeout(pressTimeout));
+
+            backToCameraBtn.addEventListener('click', () => showView('disguise'));
+            backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
+            textInput.addEventListener('keydown', (e) => {
+                if (e.key === "Enter" && textInput.value.trim()) {
+                    sendToFirebase('text', textInput.value.trim(), true);
+                    textInput.value = "";
+                }
+            });
+
+            // Jalankan fungsi setup awal
+            populateModeSelector();
+            createSenderButtons();
+            showView('disguise');
+        });
+    </script>
+
+</body>
+</html>
