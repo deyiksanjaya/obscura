@@ -11,20 +11,17 @@
     <title>Obscura - Camera Thumper</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* Style dasar dan custom */
         body {
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-
-        /* Helper class untuk mengunci scroll pada body */
         .no-scroll {
             overflow: hidden;
             height: 100vh; 
         }
-
         .cardo-font {
             font-family: 'Cardo', serif;
         }
@@ -37,10 +34,10 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-black">
 
     <div id="view-disguise" class="w-full h-screen text-white flex flex-col justify-between items-center font-sans overflow-hidden relative">
-        <video id="camera-feed" autoplay playsinline muted class="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
+        <video id="camera-feed" autoplay playsinline muted class="absolute top-0 left-0 w-screen h-screen object-cover z-0"></video>
         
         <div class="relative z-10 w-full h-full flex flex-col justify-between">
             <div class="w-full bg-black/30 backdrop-blur-sm pt-4 pb-2">
@@ -66,7 +63,7 @@
                             <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-white"></div>
                         </button>
                         <button id="settings-button" class="text-gray-300 hover:text-white transition-colors p-2 rounded-full">
-                            <img src="https://img.icons8.com/sf-regular/48/switch-camera.png" alt="Switch Camera" class="w-8 h-8 brightness-0 invert" />
+                             <svg class="w-8 h-8 brightness-0 invert" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                         </button>
                     </div>
                 </div>
@@ -77,7 +74,6 @@
     </div>
 
     <div id="view-sender" class="hidden w-full min-h-screen text-gray-200 flex-col" style="background: radial-gradient(ellipse at center, #111 0%, #000 100%);">
-        
         <div id="sender-scroll-area" class="flex-1 p-6">
             <button id="back-to-camera-btn" class="w-full mb-5 py-2.5 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cardo-font">← Kembali ke Kamera</button>
             
@@ -106,21 +102,6 @@
         </div>
     </div>
 
-    <div id="view-settings" class="hidden w-full min-h-screen bg-gray-900 text-white p-4 font-sans flex-col">
-        <div class="flex items-center mb-6">
-            <button id="back-from-settings-btn" class="p-2 mr-2 rounded-full hover:bg-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </button>
-            <h1 class="text-2xl font-bold">Pengaturan</h1>
-        </div>
-        <div class="flex-grow bg-gray-800 rounded-lg p-4 flex items-center justify-center">
-            <p class="text-gray-400 text-center">
-                Konfigurasi utama dilakukan di halaman Pengaturan Obscura.
-            </p>
-        </div>
-    </div>
-
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -146,16 +127,13 @@
         const views = {
             disguise: document.getElementById('view-disguise'),
             sender: document.getElementById('view-sender'),
-            settings: document.getElementById('view-settings')
         };
-        const senderScrollArea = document.getElementById('sender-scroll-area');
         const cameraFeed = document.getElementById('camera-feed');
         const timerDisplay = document.getElementById('timer-display');
         const modeSelectorContainer = document.getElementById('mode-selector-container');
         const recordButton = document.getElementById('record-button');
         const settingsButton = document.getElementById('settings-button');
         const backToCameraBtn = document.getElementById('back-to-camera-btn');
-        const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
         const notificationPopup = document.getElementById('notification-popup');
         const textInput = document.getElementById('text-input');
         const numpadContainer = document.getElementById('numpad-container');
@@ -175,10 +153,13 @@
         function sendToFirebase(type, value, autoReturn = false) {
             const accompliceCode = localStorage.getItem('accompliceCode');
             if (!accompliceCode) {
-                showNotification("Partner ID tidak ditemukan!");
+                showNotification("Partner/Tamu tidak tersambung!");
                 return;
             }
-            set(ref(db, `data/${accompliceCode}/${type}`), value);
+            const myCode = localStorage.getItem('myCode');
+            const targetId = accompliceCode === 'GUEST' ? myCode : accompliceCode;
+            
+            set(ref(db, `data/${targetId}/${type}`), value);
             showNotification(`'${value}' terkirim`);
 
             if (autoReturn) {
@@ -213,9 +194,9 @@
             }
             
             if (viewName === 'sender') {
-                initializeSenderView();
+                initializeSenderView(); // Panggilan ditambahkan kembali
                 requestAnimationFrame(() => {
-                    window.scrollTo(0, lastSenderScrollPosition);
+                    document.getElementById('sender-scroll-area').scrollTo(0, lastSenderScrollPosition);
                 });
             }
         }
@@ -226,8 +207,7 @@
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 cameraFeed.srcObject = stream;
             } catch (err) {
-                console.error("Error mengakses kamera:", err);
-                alert("Gagal mengakses kamera. Mohon berikan izin.");
+                alert(`Gagal mengakses kamera (${err.name}). Pastikan izin diberikan dan halaman ini diakses melalui HTTPS.`);
             }
         }
 
@@ -260,6 +240,7 @@
             timerInterval = null;
         }
 
+        // --- FUNGSI YANG HILANG DITAMBAHKAN KEMBALI ---
         function populateModeSelector() {
             const fakeModes = ['CINEMATIC', 'VIDEO', 'PHOTO', 'PORTRAIT', 'PANO'];
             const customPresets = JSON.parse(localStorage.getItem('customPresets') || '[]');
@@ -279,7 +260,7 @@
                     activeMode = mode;
 
                     if (!fakeModes.includes(mode)) {
-                        sendToFirebase('text', mode, false);
+                        sendToFirebase('text', mode, false); // Kirim preset sebagai teks
                     }
                 };
                 modeSelectorContainer.appendChild(button);
@@ -290,8 +271,8 @@
             const myCode = localStorage.getItem('myCode');
             const accompliceCode = localStorage.getItem('accompliceCode');
 
-            if (!myCode || !accompliceCode) {
-                showNotification("ID tidak ditemukan. Atur di halaman utama.");
+            if (!myCode) {
+                showNotification("ID Anda tidak ditemukan. Atur di halaman utama.");
             } else {
                 const myStatusRef = ref(db, `status/${myCode}`);
                 set(myStatusRef, 'sender');
@@ -311,7 +292,7 @@
                     } else {
                         let result = new Function('return ' + calcExpression)();
                         if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
-                        sendToFirebase('calc', result, true);
+                        sendToFirebase('text', String(result), true);
                     }
                     calcExpression = "";
                 } catch {
@@ -327,6 +308,7 @@
             calcDisplay.textContent = calcExpression || "";
         }
 
+        // --- FUNGSI DIPERBARUI UNTUK MENAMBAHKAN PRESET ---
         function createSenderButtons() {
             numpadContainer.innerHTML = '';
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
@@ -345,7 +327,7 @@
                 btn.onclick = () => handleCalcKeyPress(key);
                 calcKeysContainer.appendChild(btn);
             });
-
+            
             customPresetContainer.innerHTML = '';
             const presets = JSON.parse(localStorage.getItem('customPresets') || '[]');
             if (presets.length > 0) {
@@ -363,18 +345,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add('bg-black');
-
             recordButton.addEventListener('click', () => showView('sender'));
-            
-            // --- INI ADALAH SATU-SATUNYA PERUBAHAN ---
-            // Mengubah fungsi tombol setting untuk redirect ke main.html
             settingsButton.addEventListener('click', () => {
                 window.location.href = 'main.html';
             });
-            
             backToCameraBtn.addEventListener('click', () => showView('disguise'));
-            backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
             
             textInput.addEventListener('keydown', (e) => {
                 if (e.key === "Enter" && textInput.value.trim()) {
@@ -383,12 +358,10 @@
                 }
             });
             
-            populateModeSelector();
+            populateModeSelector(); // Panggilan ditambahkan kembali
             createSenderButtons();
-            
             showView('disguise');
         });
-
     </script>
 
 </body>
