@@ -1,0 +1,267 @@
+import React, { useState, useEffect, useRef } from 'react';
+// Mengimpor fungsi Firebase Realtime Database
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// --- Konfigurasi Firebase ---
+const firebaseConfig = {
+    apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
+    authDomain: "obscurabyheri.firebaseapp.com",
+    databaseURL: "https://obscurabyheri-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "obscurabyheri",
+    storageBucket: "obscurabyheri.appspot.com",
+    messagingSenderId: "866868400960",
+    appId: "1:866868400960:web:440e1b4979a1c0cf8a20a5"
+};
+
+// Inisialisasi Firebase di luar komponen agar hanya terjadi sekali
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- Ikon ---
+const SwitchCameraIcon = () => (<img src="https://img.icons8.com/sf-regular/48/switch-camera.png" alt="Switch Camera" className="w-8 h-8 brightness-0 invert" />);
+const ArrowLeftIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>);
+const FlashOffIcon = () => (<img src="https://img.icons8.com/ios-filled/100/flash-off.png" alt="Flash Off" className="w-6 h-6 brightness-0 invert" />);
+
+
+// --- Komponen Utama Aplikasi ---
+export default function App() {
+    const [mode, setMode] = useState('disguise');
+    const [notification, setNotification] = useState('');
+
+    const showNotification = (message) => {
+        setNotification(message);
+        setTimeout(() => setNotification(''), 1500);
+    };
+
+    const handleSecretGesture = () => setMode('settings');
+
+    switch (mode) {
+        case 'settings':
+            return <SettingsView onBack={() => setMode('disguise')} />;
+        case 'sender':
+            return <SenderView onBack={() => setMode('disguise')} showNotification={showNotification} />;
+        default:
+            return <DisguiseView onTriggerSender={() => setMode('sender')} onSecretGesture={handleSecretGesture} notification={notification} onDirectSend={(signal) => {
+                console.log(`Sinyal Langsung Terkirim: ${signal}`);
+                sendToFirebase('text', signal, showNotification);
+            }} />;
+    }
+}
+
+// Fungsi helper untuk mengirim data ke Firebase, agar bisa dipakai di banyak tempat
+const sendToFirebase = (type, value, showNotificationCallback) => {
+    const myCode = localStorage.getItem('myCode');
+    const accompliceCode = localStorage.getItem('accompliceCode');
+    if (!myCode || !accompliceCode) {
+        showNotificationCallback("Koneksi tidak ditemukan!");
+        return;
+    }
+    set(ref(db, `data/${accompliceCode}/${type}`), value);
+    showNotificationCallback(`'${value}' terkirim`);
+};
+
+
+// --- Tampilan Penyamaran (Kamera Palsu) ---
+function DisguiseView({ onTriggerSender, onSecretGesture, notification, onDirectSend }) {
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
+    const [timer, setTimer] = useState(0);
+    const [pressTimeout, setPressTimeout] = useState(null);
+    
+    const fakeModes = ['CINEMATIC', 'VIDEO', 'PHOTO', 'PORTRAIT', 'PANO'];
+    const [allModes, setAllModes] = useState(fakeModes);
+    const [activeMode, setActiveMode] = useState('VIDEO');
+
+    useEffect(() => {
+        try {
+            const storedPresets = JSON.parse(localStorage.getItem('customPresets') || '[]');
+            setAllModes([...fakeModes, ...storedPresets]);
+        } catch (e) {
+            setAllModes(fakeModes);
+        }
+    }, []); 
+
+    useEffect(() => {
+        async function getCameraStream() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                if (videoRef.current) videoRef.current.srcObject = stream;
+                streamRef.current = stream;
+            } catch (err) { console.error("Error mengakses kamera:", err); }
+        }
+        getCameraStream();
+        return () => {
+            if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
+        };
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => setTimer(prev => prev + 1), 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const formatTime = (totalSeconds) => {
+        const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    };
+
+    const handlePressStart = () => setPressTimeout(setTimeout(onSecretGesture, 1500));
+    const handlePressEnd = () => clearTimeout(pressTimeout);
+
+    const handleModeClick = (mode) => {
+        setActiveMode(mode);
+        if (!fakeModes.includes(mode)) {
+            onDirectSend(mode);
+        }
+    };
+
+    return (
+        <div className="w-full h-screen bg-black text-white flex flex-col justify-between items-center font-sans overflow-hidden relative">
+            <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+            <video ref={videoRef} autoPlay playsInline muted className="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
+            <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                <div className="w-full bg-black/30 backdrop-blur-sm pt-4 pb-2">
+                    <div className="w-full px-4 flex justify-between items-center text-white text-sm">
+                        <div className="w-1/4 text-left"><FlashOffIcon /></div>
+                        <div className="w-1/2 text-center">
+                            <span className="bg-red-600/80 rounded-md px-2 py-1 font-mono text-base">{formatTime(timer)}</span>
+                        </div>
+                        <div className="w-1/4 text-right font-sans font-medium">HD • 30</div>
+                    </div>
+                </div>
+                <div className="flex-grow"></div>
+                <div className="w-full bg-black/30 backdrop-blur-sm">
+                    <div className="flex flex-col items-center py-3 space-y-3">
+                        <div className="w-full px-4 overflow-x-auto whitespace-nowrap text-center no-scrollbar">
+                            {allModes.map(mode => (
+                                <button key={mode} onClick={() => handleModeClick(mode)} className={`inline-block mx-3 py-1 text-xs font-semibold tracking-wider transition-colors duration-200 ${activeMode === mode ? 'text-yellow-400' : 'text-gray-300'}`}>{mode}</button>
+                            ))}
+                        </div>
+                        <div className="w-full px-4 flex justify-around items-center">
+                            <div className="w-12 h-12"></div>
+                            <button onClick={onTriggerSender} onMouseDown={handlePressStart} onMouseUp={handlePressEnd} onTouchStart={handlePressStart} onTouchEnd={handlePressEnd} className="w-20 h-20 bg-white rounded-full flex items-center justify-center transform transition active:scale-90" aria-label="Tombol Aksi Thumper"><div className="w-16 h-16 bg-red-500 rounded-full border-4 border-white"></div></button>
+                            <button onClick={onSecretGesture} className="text-gray-300 hover:text-white transition-colors p-2 rounded-full"><SwitchCameraIcon /></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {notification && (<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg shadow-lg z-20">{notification}</div>)}
+        </div>
+    );
+}
+
+// --- Tampilan Pengirim (SenderView) ---
+function SenderView({ onBack, showNotification }) {
+    const [expression, setExpression] = useState("");
+    const [customPresets, setCustomPresets] = useState([]);
+
+    const kartuMap = { 1: '4 Keriting', 2: '2 Hati', 3: '7 Wajik', 4: '3 Keriting', 5: '4 Hati', 6: '6 Wajik', 7: 'Ace Sekop', 8: '5 Hati', 9: '9 Sekop', 10: '2 Sekop', 11: 'Queen Hati', 12: '3 Wajik', 13: 'Queen Keriting', 14: '8 Hati', 15: '6 Sekop', 16: '5 Sekop', 17: '9 Hati', 18: 'King Keriting', 19: '2 Wajik', 20: 'Jack Hati', 21: '3 Sekop', 22: '8 Sekop', 23: '6 Hati', 24: '10 Keriting', 25: '5 Wajik', 26: 'King Wajik', 27: '2 Keriting', 28: '3 Hati', 29: '8 Wajik', 30: '5 Keriting', 31: 'King Sekop', 32: 'Jack Wajik', 33: '8 Keriting', 34: '10 Sekop', 35: 'King Hati', 36: 'Jack Keriting', 37: '7 Sekop', 38: '10 Hati', 39: 'Ace Wajik', 40: '4 Sekop', 41: '7 Hati', 42: '4 Wajik', 43: 'Ace Keriting', 44: '9 Keriting', 45: 'Jack Sekop', 46: 'Queen Wajik', 47: '7 Keriting', 48: 'Queen Sekop', 49: '10 Wajik', 50: '6 Keriting', 51: 'Ace Hati', 52: '9 Wajik' };
+
+    useEffect(() => {
+        const myCode = localStorage.getItem('myCode');
+        const accompliceCode = localStorage.getItem('accompliceCode');
+        const presets = JSON.parse(localStorage.getItem('customPresets') || '[]');
+        setCustomPresets(presets);
+
+        if (!myCode || !accompliceCode) {
+            showNotification("ID tidak ditemukan. Kembali dan atur di halaman utama.");
+        } else {
+            const myStatusRef = ref(db, `status/${myCode}`);
+            set(myStatusRef, 'sender');
+            onDisconnect(myStatusRef).remove();
+        }
+    }, []);
+    
+    const handleTextSend = (e) => {
+        if (e.key === "Enter" && e.target.value.trim()) {
+            sendToFirebase('text', e.target.value.trim(), showNotification);
+            e.target.value = "";
+        }
+    };
+
+    const handleCalcKeyPress = (key) => {
+        if (key === '>') {
+            setExpression(prev => prev.slice(0, -1));
+            return;
+        }
+        if (key === '=') {
+            try {
+                if (/^\d+$/.test(expression)) { // Mnemonica
+                    const code = parseInt(expression, 10);
+                    const translated = kartuMap[code] || `Kode ${code}`;
+                    sendToFirebase('text', translated, showNotification);
+                } else { // Kalkulator
+                    let result = new Function('return ' + expression)();
+                    if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
+                    sendToFirebase('calc', result, showNotification);
+                }
+                setExpression("");
+            } catch {
+                setExpression("Error");
+                setTimeout(() => setExpression(""), 1000);
+            }
+        } else {
+            setExpression(prev => prev + key);
+        }
+    };
+
+    const numpadKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+    const calcKeys = ['7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '>', '=', '+'];
+
+    return (
+        <div className="w-full h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
+            <div className="flex-shrink-0 p-4">
+                <button onClick={onBack} className="w-full py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">← Kembali ke Kamera</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 pt-0">
+                <section className="mb-6">
+                    <h2 className="text-gray-400 mb-3 font-semibold">Input Teks</h2>
+                    <input type="text" onKeyDown={handleTextSend} placeholder="Ketik dan tekan Enter" className="w-full p-3 text-center bg-gray-800 rounded-lg border border-gray-700" />
+                </section>
+                <section className="mb-6">
+                    <h2 className="text-gray-400 mb-3 font-semibold">Input Angka Cepat</h2>
+                    <div className="grid grid-cols-3 gap-3">
+                        {numpadKeys.map(num => <button key={num} onClick={() => sendToFirebase('number', num, showNotification)} className="py-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-xl">{num}</button>)}
+                    </div>
+                </section>
+                <section className="mb-6">
+                    <h2 className="text-gray-400 mb-3 font-semibold">Kalkulator & Mnemonica</h2>
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-3">
+                        <div className="h-12 mb-4 text-4xl text-right font-mono bg-gray-900 rounded-md flex items-center justify-end px-3 overflow-x-auto">{expression || "0"}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                            {calcKeys.map(key => <button key={key} onClick={() => handleCalcKeyPress(key)} className="py-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-xl">{key}</button>)}
+                        </div>
+                    </div>
+                </section>
+                {customPresets.length > 0 && (
+                    <section>
+                        <h2 className="text-gray-400 mb-3 font-semibold">Custom Thump</h2>
+                        <div className="grid grid-cols-3 gap-3">
+                            {customPresets.map(preset => <button key={preset} onClick={() => sendToFirebase('text', preset, showNotification)} className="py-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors text-base truncate px-2">{preset}</button>)}
+                        </div>
+                    </section>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// --- Tampilan Pengaturan (Sangat Disederhanakan) ---
+function SettingsView({ onBack }) {
+    return (
+        <div className="w-full min-h-screen bg-gray-900 text-white p-4 font-sans flex flex-col">
+            <div className="flex items-center mb-6">
+                <button onClick={onBack} className="p-2 mr-2 rounded-full hover:bg-gray-700"><ArrowLeftIcon /></button>
+                <h1 className="text-2xl font-bold">Pengaturan</h1>
+            </div>
+            <div className="flex-grow bg-gray-800 rounded-lg p-4 flex items-center justify-center">
+                <p className="text-gray-400 text-center">
+                    Konfigurasi utama dilakukan di halaman Pengaturan Obscura.
+                </p>
+            </div>
+        </div>
+    );
+}
