@@ -46,7 +46,7 @@
     .menu-item:nth-child(1){animation-delay:.4s} .menu-item:nth-child(2){animation-delay:.6s} .menu-item:nth-child(3){animation-delay:.8s} .menu-item:nth-child(4){animation-delay:1s} .menu-item:nth-child(5){animation-delay:1.2s} .menu-item:nth-child(6){animation-delay:1.4s}
     @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
     .menu-item:not(.disabled):hover { background: rgba(255, 255, 255, 0.04); transform: scale(1.03); box-shadow: 0 0 12px rgba(255, 255, 255, 0.1); }
-    .menu-item svg, .menu-item img { width: 48px; height: 48px; margin-bottom: 12px; fill: #ffffff; opacity: 0.8; }
+    .menu-item svg, .menu-item img { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.8; }
     .menu-item span { font-size: 16px; letter-spacing: 1px; }
     .top-info { position: absolute; top: 10px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; pointer-events: none; }
     #userCodeDisplay, #connectionInfo { color: #999; font-size: 12px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px; opacity: 0; animation: fadeIn 1s ease forwards; animation-delay: 0.5s; }
@@ -74,33 +74,32 @@
   <div class="scroll-container">
     <div class="menu-column">
         <a href="receiver.html" class="menu-item" id="receiver">
-          <img src="https://img.icons8.com/ios/50/listening--v1.png" alt="Receiver Icon" style="filter: invert(1);">
-          <br>
-          <span>Receiver</span>
+            <img src="https://img.icons8.com/ios/50/listening--v1.png" alt="Receiver Icon" style="filter: invert(1);" />
+            <br><span>Receiver</span>
         </a>
-      
+
         <a href="sender.html" class="menu-item" id="sender">
-          <img src="https://img.icons8.com/ios/50/voice-recognition-scan.png" alt="Sender Icon" style="filter: invert(1);">
-          <br>
-          <span>Sender</span>
+            <img src="https://img.icons8.com/ios/50/voice-recognition-scan.png" alt="Sender Icon" style="filter: invert(1);" />
+            <br><span>Sender</span>
         </a>
-      
-      <a href="camera.html" class="menu-item" id="cameraThumper">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            <span>Thumper Kamera</span>
+
+        <a href="camera.html" class="menu-item" id="cameraThumper">
+            <img src="https://img.icons8.com/ios/50/camera--v4.png" alt="Thumper Kamera Icon" style="filter: invert(1);" />
+            <br><span>Thumper Kamera</span>
         </a>
-      
+
         <a href="api.html" class="menu-item">
-          <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49 1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l-.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
-          <span>Pengaturan</span>
-        </a>      
-        <a href="instructions.html" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span>Panduan</span></a>
-        
+            <img src="https://img.icons8.com/ios/50/settings--v1.png" alt="Settings Icon" style="filter: invert(1);" />
+            <br><span>Pengaturan</span>
+        </a>
+
+        <a href="instructions.html" class="menu-item">
+            <img src="https://img.icons8.com/ios/50/book--v1.png" alt="Panduan Icon" style="filter: invert(1);" />
+            <br><span>Panduan</span>
+        </a>
+
         <a href="#" class="menu-item" id="guestActionButton">
-            <svg id="guestActionIcon" viewBox="0 0 24 24"><path id="guestActionIconPath" d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+            <img id="guestActionImg" src="https://img.icons8.com/ios-filled/50/link--v1.png" alt="Guest Link Icon" style="filter: invert(1);" />
             <br>
             <span id="guestActionText">Buat Link Tamu</span>
         </a>
@@ -144,12 +143,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Variabel Elemen DOM
+    // Variabel Elemen DOM Disesuaikan
     const setupModal = document.getElementById('setupModal');
     const goToSettingsBtn = document.getElementById('goToSettingsBtn');
     const guestActionButton = document.getElementById('guestActionButton');
     const guestActionText = document.getElementById('guestActionText');
-    const guestActionIconPath = document.getElementById('guestActionIconPath');
+    const guestActionImg = document.getElementById('guestActionImg'); // Ditargetkan ke <img>
     const info = document.getElementById('connectionInfo');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const receiverLink = document.getElementById('receiver');
@@ -168,12 +167,13 @@
     const cancelChoiceBtn = document.getElementById('cancelChoiceBtn');
     
     let currentConnectionType = null;
-    const iconPath = {
-        link: "M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z",
-        brokenLink: "M17 7h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1 0 1.43-.98 2.63-2.29 2.96L20 17.17c1.38-1.02 2.5-2.42 3-4.17C21.99 9.37 19.89 7 17 7zM7 7H5.83l2.88 2.88c.04-.19.09-.37.15-.55A3.11 3.11 0 0112 8.17l1.45-1.45C12.84 6.2 12.06 6 11.23 6H8v2h1.17l2 2H8v-2zM2.81 2.81L1.39 4.22 5 7.83V9h4v2H7.83l2.88 2.88c.04-.19.09-.37.15-.55A3.11 3.11 0 0116 12.17l4.61 4.61 1.41-1.41L2.81 2.81z"
+
+    // URL Ikon Disiapkan untuk Diganti-ganti
+    const iconUrl = {
+        link: "https://img.icons8.com/ios-filled/50/link--v1.png",
+        brokenLink: "https://img.icons8.com/wired/64/broken-link.png"
     };
 
-    // --- Fungsi untuk meng-handle Aksi Tombol Tamu ---
     const handleCreateGuestLink = (e) => {
         e.preventDefault();
         const myCode = localStorage.getItem('myCode');
@@ -207,16 +207,14 @@
         }
     };
 
-
-    // --- Definisi Fungsi Utama---
     function showSetupModal() { setupModal.classList.add('visible'); }
 
+    // Fungsi setMenuState Disesuaikan
     function setMenuState(connectionType, partnerData = null) {
         currentConnectionType = connectionType;
         
-        // Default state (tidak tersambung)
         guestActionText.textContent = "Buat Link Tamu";
-        guestActionIconPath.setAttribute('d', iconPath.link);
+        guestActionImg.src = iconUrl.link;
         guestActionButton.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
         guestActionButton.onclick = handleCreateGuestLink;
         
@@ -231,9 +229,8 @@
             receiverLink.classList.remove('disabled');
             senderLink.classList.remove('disabled');
             
-            // Ubah tombol menjadi "Putuskan Koneksi"
             guestActionText.textContent = "Putuskan Koneksi";
-            guestActionIconPath.setAttribute('d', iconPath.brokenLink);
+            guestActionImg.src = iconUrl.brokenLink;
             guestActionButton.style.backgroundColor = '#4a2525';
             guestActionButton.onclick = handleDisconnect;
 
@@ -242,9 +239,8 @@
             info.textContent = "Tamu Terhubung";
             receiverLink.classList.remove('disabled');
             
-            // Ubah tombol menjadi "Putuskan Koneksi"
             guestActionText.textContent = "Putuskan Koneksi";
-            guestActionIconPath.setAttribute('d', iconPath.brokenLink);
+            guestActionImg.src = iconUrl.brokenLink;
             guestActionButton.style.backgroundColor = '#4a2525';
             guestActionButton.onclick = handleDisconnect;
         }
@@ -262,9 +258,8 @@
         }
 
         updateUserCodeDisplay();
-        setMenuState(null); // Atur state awal
+        setMenuState(null);
 
-        // ... (sisa logika inisialisasi sama)
         onValue(ref(db, `connections/${myCode}/requestFrom`), async (snap) => {
             const requesterCode = snap.val();
             if (requesterCode && !currentConnectionType) { 
@@ -385,10 +380,9 @@
       showShareModal(url);
     }
     
-    // --- Event Listeners ---
+    // Event Listeners
     goToSettingsBtn.addEventListener('click', () => { window.location.href = 'api.html'; });
     
-    // Event listeners untuk modal pilihan link
     generateSimpleLinkBtn.addEventListener('click', () => {
         hideViewChoiceModal();
         generateAndShowLink('simple');
@@ -427,7 +421,6 @@
     shareModal.addEventListener('click', (e) => { if (e.target === shareModal) hideShareModal(); });
     viewChoiceModal.addEventListener('click', (e) => { if (e.target === viewChoiceModal) hideViewChoiceModal(); });
 
-    // --- Inisialisasi Halaman ---
     initializeAppLogic();
   </script>
 </body>
