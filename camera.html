@@ -1,143 +1,130 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#000000">
-    <title>Obscura - Guest Sender</title>
+    <script src="auth-guard.js"></script>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Obscura - Camera Thumper</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- STYLE GABUNGAN --- */
-        html, body {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            background: radial-gradient(ellipse at center, #111 0%, #000 100%);
-            color: #e0e0e0;
+        /* Style dasar dan custom */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .font-cardo { font-family: 'Cardo', serif; }
-        .font-inter { font-family: 'Inter', sans-serif; }
 
-        /* Status & General */
-        .status-container {
-            display: flex; justify-content: center; align-items: center; height: 100%;
-            font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
+        /* Helper class untuk mengunci scroll pada body */
+        .no-scroll {
+            overflow: hidden;
+            height: 100vh; 
         }
-        .hidden-view { display: none !important; }
 
-        /* Style untuk Tampilan Simple */
-        .simple-view {
-            height: 100%; overflow-y: auto; padding: 24px; box-sizing: border-box;
+        .cardo-font {
             font-family: 'Cardo', serif;
         }
-        .simple-view section {
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px 0; margin-bottom: 20px;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .simple-view h2 {
-            font-size: 18px; color: #aaa; margin: 0 0 15px 0; font-weight: 400;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .simple-view input[type="text"] {
-            width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border: none;
-            border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #eee; text-align: center;
-        }
-        .simple-view .numpad, .simple-view .calc-keys {
-            display: grid; gap: 12px;
-        }
-        .simple-view .numpad { grid-template-columns: repeat(3, 1fr); }
-        .simple-view .calc-keys { grid-template-columns: repeat(4, 1fr); }
-
-        .simple-view .numpad button, .simple-view .calc-keys button {
-            font-size: 20px; padding: 16px; background: rgba(255,255,255,0.05);
-            color: #eee; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;
-        }
-        .simple-view .numpad button:hover, .simple-view .calc-keys button:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        .simple-view .calc-display {
-            background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; font-size: 24px;
-            margin-bottom: 12px; min-height: 32px; text-align: right; word-wrap: break-word;
-        }
-
-        /* Style untuk Tampilan Disguise */
-        .disguise-body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .no-scroll { overflow: hidden; height: 100vh; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-black">
+<body>
 
-    <div id="statusContainer" class="status-container">
-        <p id="statusMessage">Menghubungkan...</p>
-    </div>
-
-    <div id="view-simple" class="simple-view hidden-view">
-        <section>
-            <h2>Input Teks</h2>
-            <input type="text" id="simple-text-input" placeholder="Ketik lalu tekan Enter" />
-        </section>
-        <section>
-            <h2>Input Angka Cepat</h2>
-            <div class="numpad" id="simple-numpad"></div>
-        </section>
-        <section>
-            <h2>Kalkulator & Mnemonica</h2>
-            <div class="calc-display" id="simple-calc-display"></div>
-            <div class="calc-keys" id="simple-calc-keys"></div>
-        </section>
-    </div>
-
-    <div id="view-disguise-wrapper" class="hidden-view">
-        <div id="view-disguise" class="w-full h-screen text-white flex flex-col justify-between items-center font-inter overflow-hidden relative">
-            <video id="camera-feed" autoplay playsinline muted class="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
-            <div class="relative z-10 w-full h-full flex flex-col justify-between">
-                <div class="w-full bg-black/30 backdrop-blur-sm pt-4 pb-2">
-                    <div class="w-full px-4 flex justify-between items-center text-white text-sm">
-                        <div class="w-1/4 text-left"><img src="https://img.icons8.com/ios-filled/100/flash-off.png" alt="Flash Off" class="w-6 h-6 brightness-0 invert" /></div>
-                        <div class="w-1/2 text-center"><span id="timer-display" class="bg-red-600/80 rounded-md px-2 py-1 font-mono text-base">00:00:00</span></div>
-                        <div class="w-1/4 text-right font-sans font-medium">HD • 30</div>
+    <div id="view-disguise" class="w-full h-screen text-white flex flex-col justify-between items-center font-sans overflow-hidden relative">
+        <video id="camera-feed" autoplay playsinline muted class="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
+        
+        <div class="relative z-10 w-full h-full flex flex-col justify-between">
+            <div class="w-full bg-black/30 backdrop-blur-sm pt-4 pb-2">
+                <div class="w-full px-4 flex justify-between items-center text-white text-sm">
+                    <div class="w-1/4 text-left">
+                        <img src="https://img.icons8.com/ios-filled/100/flash-off.png" alt="Flash Off" class="w-6 h-6 brightness-0 invert" />
                     </div>
+                    <div class="w-1/2 text-center">
+                        <span id="timer-display" class="bg-red-600/80 rounded-md px-2 py-1 font-mono text-base">00:00:00</span>
+                    </div>
+                    <div class="w-1/4 text-right font-sans font-medium">HD • 30</div>
                 </div>
-                <div class="flex-grow"></div>
-                <div class="w-full bg-black/30 backdrop-blur-sm">
-                    <div class="flex flex-col items-center py-3 space-y-3">
-                        <div id="mode-selector-container" class="w-full px-4 overflow-x-auto whitespace-nowrap text-center no-scrollbar"></div>
-                        <div class="w-full px-4 flex justify-around items-center">
-                            <div class="w-12 h-12"></div>
-                            <button id="record-button" class="w-20 h-20 bg-white rounded-full flex items-center justify-center transform transition active:scale-90"><div class="w-16 h-16 bg-red-500 rounded-full border-4 border-white"></div></button>
-                            <div class="w-12 h-12"></div>
-                        </div>
+            </div>
+
+            <div class="flex-grow"></div>
+
+            <div class="w-full bg-black/30 backdrop-blur-sm">
+                <div class="flex flex-col items-center py-3 space-y-3">
+                    <div id="mode-selector-container" class="w-full px-4 overflow-x-auto whitespace-nowrap text-center no-scrollbar"></div>
+                    <div class="w-full px-4 flex justify-around items-center">
+                        <div class="w-12 h-12"></div>
+                        <button id="record-button" class="w-20 h-20 bg-white rounded-full flex items-center justify-center transform transition active:scale-90" aria-label="Tombol Aksi Thumper">
+                            <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-white"></div>
+                        </button>
+                        <button id="settings-button" class="text-gray-300 hover:text-white transition-colors p-2 rounded-full">
+                            <img src="https://img.icons8.com/sf-regular/48/switch-camera.png" alt="Switch Camera" class="w-8 h-8 brightness-0 invert" />
+                        </button>
                     </div>
                 </div>
             </div>
-            <div id="notification-popup" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg shadow-lg z-20 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
         </div>
-        <div id="view-sender" class="hidden w-full min-h-screen text-gray-200 flex-col" style="background: radial-gradient(ellipse at center, #111 0%, #000 100%);">
-            <div class="flex-1 p-6">
-                <button id="back-to-camera-btn" class="w-full mb-5 py-2.5 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors font-cardo">← Kembali ke Kamera</button>
-                <section class="mb-8 pb-5 border-b border-white/10">
-                    <h2 class="text-lg text-gray-400 mb-4 font-normal font-cardo">Input Teks</h2>
-                    <input type="text" id="disguise-text-input" placeholder="Ketik dan tekan Enter" class="w-full p-3 text-center bg-white/5 rounded-lg font-cardo" />
-                </section>
-                <section class="mb-8 pb-5 border-b border-white/10">
-                    <h2 class="text-lg text-gray-400 mb-4 font-normal font-cardo">Input Angka Cepat</h2>
-                    <div id="disguise-numpad" class="grid grid-cols-3 gap-3"></div>
-                </section>
-                <section>
-                    <h2 class="text-lg text-gray-400 mb-4 font-normal font-cardo">Kalkulator & Mnemonica</h2>
-                    <div id="disguise-calc-display" class="h-14 mb-5 text-4xl text-center font-mono bg-white/5 rounded-lg flex items-center justify-center px-3 overflow-x-auto"></div>
-                    <div id="disguise-calc-keys" class="grid grid-cols-4 gap-2"></div>
-                </section>
-            </div>
+        
+        <div id="notification-popup" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white px-4 py-2 rounded-lg shadow-lg z-20 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+    </div>
+
+    <div id="view-sender" class="hidden w-full min-h-screen text-gray-200 flex-col" style="background: radial-gradient(ellipse at center, #111 0%, #000 100%);">
+        
+        <div id="sender-scroll-area" class="flex-1 p-6">
+            <button id="back-to-camera-btn" class="w-full mb-5 py-2.5 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cardo-font">← Kembali ke Kamera</button>
+            
+            <section class="mb-8 pb-5 border-b border-white/10">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Input Teks</h2>
+                <input type="text" id="text-input" placeholder="Ketik dan tekan Enter" class="w-full p-3 text-center bg-white/5 rounded-lg cardo-font" />
+            </section>
+            
+            <section class="mb-8 pb-5 border-b border-white/10">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Input Angka Cepat</h2>
+                <div id="numpad-container" class="grid grid-cols-3 gap-3"></div>
+            </section>
+            
+            <section class="mb-8 pb-5 border-b border-white/10">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Kalkulator & Mnemonica</h2>
+                <div class="bg-transparent rounded-lg">
+                    <div id="calc-display" class="h-14 mb-5 text-4xl text-center font-mono bg-white/5 rounded-lg flex items-center justify-center px-3 overflow-x-auto"></div>
+                    <div id="calc-keys-container" class="grid grid-cols-4 gap-2"></div>
+                </div>
+            </section>
+            
+            <section id="custom-thump-section" class="hidden">
+                <h2 class="text-lg text-gray-400 mb-4 font-normal cardo-font">Custom Thump</h2>
+                <div id="custom-preset-container" class="grid grid-cols-3 gap-3"></div>
+            </section>
         </div>
     </div>
+
+    <div id="view-settings" class="hidden w-full min-h-screen bg-gray-900 text-white p-4 font-sans flex-col">
+        <div class="flex items-center mb-6">
+            <button id="back-from-settings-btn" class="p-2 mr-2 rounded-full hover:bg-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 class="text-2xl font-bold">Pengaturan</h1>
+        </div>
+        <div class="flex-grow bg-gray-800 rounded-lg p-4 flex items-center justify-center">
+            <p class="text-gray-400 text-center">
+                Konfigurasi utama dilakukan di halaman Pengaturan Obscura.
+            </p>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, get, set, remove, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // --- KONFIGURASI DAN LOGIKA UTAMA (GABUNGAN) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
             authDomain: "obscurabyheri.firebaseapp.com",
@@ -150,247 +137,121 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let hostId = null;
-        let cameraStream = null;
+        let stream = null;
         let timerInterval = null;
+        let calcExpression = "";
+        let lastSenderScrollPosition = 0;
+        const kartuMap = { 1: '4 Keriting', 2: '2 Hati', 3: '7 Wajik', 4: '3 Keriting', 5: '4 Hati', 6: '6 Wajik', 7: 'Ace Sekop', 8: '5 Hati', 9: '9 Sekop', 10: '2 Sekop', 11: 'Queen Hati', 12: '3 Wajik', 13: 'Queen Keriting', 14: '8 Hati', 15: '6 Sekop', 16: '5 Sekop', 17: '9 Hati', 18: 'King Keriting', 19: '2 Wajik', 20: 'Jack Hati', 21: '3 Sekop', 22: '8 Sekop', 23: '6 Hati', 24: '10 Keriting', 25: '5 Wajik', 26: 'King Wajik', 27: '2 Keriting', 28: '3 Hati', 29: '8 Wajik', 30: '5 Keriting', 31: 'King Sekop', 32: 'Jack Wajik', 33: '8 Keriting', 34: '10 Sekop', 35: 'King Hati', 36: 'Jack Keriting', 37: '7 Sekop', 38: '10 Hati', 39: 'Ace Wajik', 40: '4 Sekop', 41: '7 Hati', 42: '4 Wajik', 43: 'Ace Keriting', 44: '9 Keriting', 45: 'Jack Sekop', 46: 'Queen Wajik', 47: '7 Keriting', 48: 'Queen Sekop', 49: '10 Wajik', 50: '6 Keriting', 51: 'Ace Hati', 52: '9 Wajik' };
 
-        const mnemonicaStack = [
-            "4 Sekop", "2 Hati", "7 Keriting", "3 Sekop", "4 Hati", "6 Keriting", "As Sekop", "5 Hati", "9 Sekop", "2 Keriting",
-            "Ratu Hati", "3 Keriting", "Ratu Sekop", "5 Sekop", "7 Hati", "Jack Keriting", "As Hati", "8 Sekop", "6 Hati", "Jack Sekop",
-            "5 Keriting", "King Hati", "10 Sekop", "3 Hati", "8 Keriting", "King Sekop", "3 Wajik", "Jack Hati", "9 Keriting", "King Keriting",
-            "8 Hati", "10 Keriting", "King Wajik", "2 Sekop", "7 Wajik", "As Keriting", "9 Hati", "2 Wajik", "Jack Wajik", "4 Keriting",
-            "6 Wajik", "8 Wajik", "4 Wajik", "As Wajik", "9 Wajik", "Ratu Keriting", "7 Sekop", "10 Wajik", "5 Wajik", "Ratu Wajik",
-            "10 Hati", "6 Sekop"
-        ];
-        
-        // --- FUNGSI PENGIRIMAN DATA TERPUSAT ---
-        function sendData(type, value) {
-            if (hostId) {
-                set(ref(db, `data/${hostId}/${type}`), value);
-                return true;
-            }
-            return false;
+        const views = {
+            disguise: document.getElementById('view-disguise'),
+            sender: document.getElementById('view-sender'),
+            settings: document.getElementById('view-settings')
+        };
+        const senderScrollArea = document.getElementById('sender-scroll-area');
+        const cameraFeed = document.getElementById('camera-feed');
+        const timerDisplay = document.getElementById('timer-display');
+        const modeSelectorContainer = document.getElementById('mode-selector-container');
+        const recordButton = document.getElementById('record-button');
+        const settingsButton = document.getElementById('settings-button');
+        const backToCameraBtn = document.getElementById('back-to-camera-btn');
+        const backFromSettingsBtn = document.getElementById('back-from-settings-btn');
+        const notificationPopup = document.getElementById('notification-popup');
+        const textInput = document.getElementById('text-input');
+        const numpadContainer = document.getElementById('numpad-container');
+        const calcDisplay = document.getElementById('calc-display');
+        const calcKeysContainer = document.getElementById('calc-keys-container');
+        const customThumpSection = document.getElementById('custom-thump-section');
+        const customPresetContainer = document.getElementById('custom-preset-container');
+
+        function showNotification(message) {
+            notificationPopup.textContent = message;
+            notificationPopup.classList.remove('opacity-0');
+            setTimeout(() => {
+                notificationPopup.classList.add('opacity-0');
+            }, 1500);
         }
 
-        // --- Inisialisasi Sesi & Pemilihan Tampilan ---
-        async function initializeGuestSession() {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('token');
-            const viewType = params.get('view') || 'simple'; // Default ke 'simple'
-
-            if (!token) {
-                document.getElementById('statusMessage').textContent = "Link tidak valid.";
+        function sendToFirebase(type, value, autoReturn = false) {
+            const accompliceCode = localStorage.getItem('accompliceCode');
+            if (!accompliceCode) {
+                showNotification("Partner ID tidak ditemukan!");
                 return;
             }
+            set(ref(db, `data/${accompliceCode}/${type}`), value);
+            showNotification(`'${value}' terkirim`);
 
-            try {
-                const snapshot = await get(ref(db, `guestTokens/${token}`));
-                if (!snapshot.exists()) {
-                    document.getElementById('statusMessage').textContent = "Link sudah tidak berlaku atau salah.";
-                    return;
-                }
-                hostId = snapshot.val().hostId;
-                await remove(ref(db, `guestTokens/${token}`));
-
-                onValue(ref(db, `status/${hostId}`), (snap) => {
-                    if (!snap.exists()) {
-                        document.body.innerHTML = `<div class="status-container">Koneksi dengan host terputus.</div>`;
-                    }
-                });
-
-                const guestPresenceRef = ref(db, `guestConnections/${hostId}`);
-                await set(guestPresenceRef, { connectedAt: Date.now(), view: viewType });
-                onDisconnect(guestPresenceRef).remove();
-
-                document.getElementById('statusContainer').classList.add('hidden-view');
-                if (viewType === 'disguise') {
-                    setupDisguiseView();
-                } else {
-                    setupSimpleView();
-                }
-            } catch (error) {
-                console.error("Initialization error:", error);
-                document.getElementById('statusMessage').textContent = "Gagal terhubung ke server.";
+            if (autoReturn) {
+                setTimeout(() => {
+                    showView('disguise');
+                }, 400); 
             }
         }
 
-        // --- SETUP UNTUK TAMPILAN SIMPLE ---
-        function setupSimpleView() {
-            const view = document.getElementById('view-simple');
-            const textInput = document.getElementById("simple-text-input");
-            const numpad = document.getElementById("simple-numpad");
-            const calcDisplay = document.getElementById("simple-calc-display");
-            const calcKeys = document.getElementById("simple-calc-keys");
+        function showView(viewName) {
+            if (views.sender.style.display === 'flex') {
+                lastSenderScrollPosition = window.scrollY;
+            }
+
+            Object.values(views).forEach(view => view.style.display = 'none');
             
-            view.classList.remove('hidden-view');
-
-            textInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" && textInput.value.trim()) {
-                    sendData('text', textInput.value.trim());
-                    textInput.value = "";
-                }
-            });
-
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
-                const btn = document.createElement("button");
-                btn.textContent = num;
-                btn.onclick = () => sendData('number', num);
-                numpad.appendChild(btn);
-            });
-            
-            let expression = "";
-            setupCalculator(calcKeys, calcDisplay, (key) => {
-                if (key === '=') {
-                    handleEquals(expression, (type, value) => sendData(type, value));
-                    expression = "";
-                } else { expression += key; }
-                return expression;
-            });
-        }
-        
-        // --- SETUP UNTUK TAMPILAN DISGUISE ---
-        function setupDisguiseView() {
-            document.getElementById('view-disguise-wrapper').classList.remove('hidden-view');
-            const viewDisguise = document.getElementById('view-disguise');
-            const viewSender = document.getElementById('view-sender');
-
-            const textInput = document.getElementById("disguise-text-input");
-            const numpad = document.getElementById("disguise-numpad");
-            const calcDisplay = document.getElementById("disguise-calc-display");
-            const calcKeys = document.getElementById("disguise-calc-keys");
-
-            const showSender = () => {
+            if (viewName === 'sender') {
                 document.body.classList.remove('no-scroll');
-                viewDisguise.style.display = 'none';
-                viewSender.style.display = 'flex';
-                stopCamera();
-                stopTimer();
-            };
-            const showCamera = () => {
+            } else {
                 document.body.classList.add('no-scroll');
-                viewSender.style.display = 'none';
-                viewDisguise.style.display = 'flex';
+            }
+            
+            views[viewName].style.display = 'flex';
+
+            if (viewName === 'disguise') {
                 startCamera();
                 startTimer();
-            };
+                window.scrollTo(0, 0);
+            } else {
+                stopCamera();
+                stopTimer();
+            }
             
-            document.getElementById('record-button').onclick = showSender;
-            document.getElementById('back-to-camera-btn').onclick = showCamera;
-            
-            const notificationPopup = document.getElementById('notification-popup');
-            const showNotif = (message) => {
-                notificationPopup.textContent = message;
-                notificationPopup.classList.remove('opacity-0');
-                setTimeout(() => notificationPopup.classList.add('opacity-0'), 1500);
-            };
-
-            textInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" && textInput.value.trim()) {
-                    sendData('text', textInput.value.trim());
-                    showNotif(`'${textInput.value.trim()}' terkirim`);
-                    textInput.value = "";
-                    setTimeout(showCamera, 400);
-                }
-            });
-
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
-                const btn = document.createElement("button");
-                btn.textContent = num;
-                btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl font-cardo";
-                btn.onclick = () => {
-                    sendData('number', num);
-                    showNotif(`'${num}' terkirim`);
-                    setTimeout(showCamera, 400);
-                };
-                numpad.appendChild(btn);
-            });
-
-            let expression = "";
-            setupCalculator(calcKeys, calcDisplay, (key) => {
-                if (key === '=') {
-                    handleEquals(expression, (type, value) => {
-                        sendData(type, value);
-                        showNotif(`'${value}' terkirim`);
-                        setTimeout(showCamera, 400);
-                    });
-                    expression = "";
-                } else if (key === '>') {
-                    expression = expression.slice(0, -1);
-                } else { 
-                    expression += key; 
-                }
-                return expression;
-            }, true);
-            
-            showCamera();
-        }
-
-        // --- FUNGSI PEMBANTU (HELPERS) ---
-        function setupCalculator(keysContainer, displayElement, onKeyPress, isDisguise = false) {
-            keysContainer.innerHTML = '';
-            const keys = isDisguise ? ['7','8','9','/','4','5','6','*','1','2','3','-','0','>','=','+'] : ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
-            let currentExpression = "";
-            keys.forEach(key => {
-                const btn = document.createElement("button");
-                btn.textContent = key;
-                if (isDisguise) {
-                    btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl font-cardo";
-                }
-                btn.onclick = () => {
-                    currentExpression = onKeyPress(key, currentExpression);
-                    displayElement.textContent = currentExpression;
-                };
-                keysContainer.appendChild(btn);
-            });
-        }
-
-        function handleEquals(expression, sendCallback) {
-            try {
-                const num = parseInt(expression, 10);
-                if (!isNaN(num) && String(num) === expression && num >= 1 && num <= 52) {
-                    const cardName = mnemonicaStack[num - 1];
-                    sendCallback('text', cardName);
-                } else {
-                    let result = new Function('return ' + expression)();
-                    if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
-                    sendCallback('text', String(result));
-                }
-            } catch {
-                // Do nothing on error, just reset
+            if (viewName === 'sender') {
+                initializeSenderView();
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, lastSenderScrollPosition);
+                });
             }
         }
-        
+
         async function startCamera() {
-            if (cameraStream) return;
+            if (stream) return;
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                document.getElementById('camera-feed').srcObject = cameraStream;
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                cameraFeed.srcObject = stream;
             } catch (err) {
-                alert("Gagal mengakses kamera. Pastikan izin diberikan dan halaman diakses via HTTPS.");
+                console.error("Error mengakses kamera:", err);
+                alert("Gagal mengakses kamera. Mohon berikan izin.");
             }
         }
 
         function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
             }
+        }
+
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
         }
 
         function startTimer() {
             if (timerInterval) return;
-            const timerDisplay = document.getElementById('timer-display');
             let seconds = 0;
-            const formatTime = () => {
-                const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-                const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-                const s = (seconds % 60).toString().padStart(2, '0');
-                timerDisplay.textContent = `${h}:${m}:${s}`;
-            };
-            formatTime();
+            timerDisplay.textContent = formatTime(seconds);
             timerInterval = setInterval(() => {
                 seconds++;
-                formatTime();
+                timerDisplay.textContent = formatTime(seconds);
             }, 1000);
         }
 
@@ -399,9 +260,136 @@
             timerInterval = null;
         }
 
-        // --- JALANKAN APLIKASI ---
-        initializeGuestSession();
+        function populateModeSelector() {
+            const fakeModes = ['CINEMATIC', 'VIDEO', 'PHOTO', 'PORTRAIT', 'PANO'];
+            const customPresets = JSON.parse(localStorage.getItem('customPresets') || '[]');
+            const allModes = [...fakeModes, ...customPresets];
+            let activeMode = 'VIDEO';
+
+            modeSelectorContainer.innerHTML = '';
+            allModes.forEach(mode => {
+                const button = document.createElement('button');
+                button.textContent = mode;
+                button.className = `inline-block mx-3 py-1 text-xs font-semibold tracking-wider transition-colors duration-200 ${activeMode === mode ? 'text-yellow-400' : 'text-gray-300'}`;
+                
+                button.onclick = () => {
+                    const allButtons = modeSelectorContainer.querySelectorAll('button');
+                    allButtons.forEach(btn => btn.className = btn.className.replace('text-yellow-400', 'text-gray-300'));
+                    button.className = button.className.replace('text-gray-300', 'text-yellow-400');
+                    activeMode = mode;
+
+                    if (!fakeModes.includes(mode)) {
+                        sendToFirebase('text', mode, false);
+                    }
+                };
+                modeSelectorContainer.appendChild(button);
+            });
+        }
+
+        function initializeSenderView() {
+            const myCode = localStorage.getItem('myCode');
+            const accompliceCode = localStorage.getItem('accompliceCode');
+
+            if (!myCode || !accompliceCode) {
+                showNotification("ID tidak ditemukan. Atur di halaman utama.");
+            } else {
+                const myStatusRef = ref(db, `status/${myCode}`);
+                set(myStatusRef, 'sender');
+                onDisconnect(myStatusRef).remove();
+            }
+        }
+        
+        function handleCalcKeyPress(key) {
+            if (key === '>') {
+                calcExpression = calcExpression.slice(0, -1);
+            } else if (key === '=') {
+                try {
+                    if (/^\d+$/.test(calcExpression)) {
+                        const code = parseInt(calcExpression, 10);
+                        const translated = kartuMap[code] || `Kode ${code}`;
+                        sendToFirebase('text', translated, true);
+                    } else {
+                        let result = new Function('return ' + calcExpression)();
+                        if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
+                        sendToFirebase('calc', result, true);
+                    }
+                    calcExpression = "";
+                } catch {
+                    calcExpression = "Error";
+                    setTimeout(() => {
+                        calcExpression = "";
+                        calcDisplay.textContent = "";
+                    }, 1000);
+                }
+            } else {
+                calcExpression += key;
+            }
+            calcDisplay.textContent = calcExpression || "";
+        }
+
+        function createSenderButtons() {
+            numpadContainer.innerHTML = '';
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
+                const btn = document.createElement('button');
+                btn.textContent = num;
+                btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl cardo-font";
+                btn.onclick = () => sendToFirebase('number', num, true);
+                numpadContainer.appendChild(btn);
+            });
+
+            calcKeysContainer.innerHTML = '';
+            ['7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '>', '=', '+'].forEach(key => {
+                const btn = document.createElement('button');
+                btn.textContent = key;
+                btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl cardo-font";
+                btn.onclick = () => handleCalcKeyPress(key);
+                calcKeysContainer.appendChild(btn);
+            });
+
+            customPresetContainer.innerHTML = '';
+            const presets = JSON.parse(localStorage.getItem('customPresets') || '[]');
+            if (presets.length > 0) {
+                customThumpSection.style.display = 'block';
+                presets.forEach(preset => {
+                    const btn = document.createElement('button');
+                    btn.textContent = preset;
+                    btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-base truncate px-2 cardo-font";
+                    btn.onclick = () => sendToFirebase('text', preset, true);
+                    customPresetContainer.appendChild(btn);
+                });
+            } else {
+                customThumpSection.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('bg-black');
+
+            recordButton.addEventListener('click', () => showView('sender'));
+            
+            // --- INI ADALAH SATU-SATUNYA PERUBAHAN ---
+            // Mengubah fungsi tombol setting untuk redirect ke main.html
+            settingsButton.addEventListener('click', () => {
+                window.location.href = 'main.html';
+            });
+            
+            backToCameraBtn.addEventListener('click', () => showView('disguise'));
+            backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
+            
+            textInput.addEventListener('keydown', (e) => {
+                if (e.key === "Enter" && textInput.value.trim()) {
+                    sendToFirebase('text', textInput.value.trim(), true);
+                    textInput.value = "";
+                }
+            });
+            
+            populateModeSelector();
+            createSenderButtons();
+            
+            showView('disguise');
+        });
 
     </script>
+
 </body>
 </html>
