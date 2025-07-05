@@ -14,18 +14,17 @@
 
     <style>
         /* Style dasar dan custom */
-        /* --- PERUBAHAN DIMULAI DI SINI --- */
+        /* --- PERUBAHAN 1: Body dikunci permanen agar tidak bisa di-scroll --- */
         body {
             font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent; /* Mencegah highlight biru saat disentuh di mobile */
+            -webkit-tap-highlight-color: transparent;
             
-            /* CSS untuk mengunci body dan mencegah scroll/bounce effect di mobile */
+            /* CSS ini mengunci seluruh frame halaman, ideal untuk tampilan kamera */
             position: fixed;
             width: 100%;
             height: 100%;
             overflow: hidden;
         }
-        /* --- PERUBAHAN SELESAI DI SINI --- */
 
         .cardo-font {
             font-family: 'Cardo', serif;
@@ -81,7 +80,7 @@
 
     <div id="view-sender" class="hidden w-full h-screen text-gray-200 flex-col" style="background: radial-gradient(ellipse at center, #111 0%, #000 100%);">
         
-        <div id="sender-scroll-area" class="flex-1 overflow-y-hidden p-6">
+        <div id="sender-scroll-area" class="flex-1 overflow-y-auto p-6">
             <button id="back-to-camera-btn" class="w-full mb-5 py-2.5 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors cardo-font">← Kembali ke Kamera</button>
             
             <section class="mb-8 pb-5 border-b border-white/10">
@@ -146,10 +145,8 @@
         let stream = null;
         let timerInterval = null;
         let calcExpression = "";
-        
-        // --- PERHATIAN: Variabel ini tidak lagi digunakan karena scroll dinonaktifkan ---
-        // let lastSenderScrollPosition = 0; 
-        
+        // --- PERUBAHAN 3: Mengaktifkan kembali logika posisi scroll untuk UX yang lebih baik ---
+        let lastSenderScrollPosition = 0;
         const kartuMap = { 1: '4 Keriting', 2: '2 Hati', 3: '7 Wajik', 4: '3 Keriting', 5: '4 Hati', 6: '6 Wajik', 7: 'Ace Sekop', 8: '5 Hati', 9: '9 Sekop', 10: '2 Sekop', 11: 'Queen Hati', 12: '3 Wajik', 13: 'Queen Keriting', 14: '8 Hati', 15: '6 Sekop', 16: '5 Sekop', 17: '9 Hati', 18: 'King Keriting', 19: '2 Wajik', 20: 'Jack Hati', 21: '3 Sekop', 22: '8 Sekop', 23: '6 Hati', 24: '10 Keriting', 25: '5 Wajik', 26: 'King Wajik', 27: '2 Keriting', 28: '3 Hati', 29: '8 Wajik', 30: '5 Keriting', 31: 'King Sekop', 32: 'Jack Wajik', 33: '8 Keriting', 34: '10 Sekop', 35: 'King Hati', 36: 'Jack Keriting', 37: '7 Sekop', 38: '10 Hati', 39: 'Ace Wajik', 40: '4 Sekop', 41: '7 Hati', 42: '4 Wajik', 43: 'Ace Keriting', 44: '9 Keriting', 45: 'Jack Sekop', 46: 'Queen Wajik', 47: '7 Keriting', 48: 'Queen Sekop', 49: '10 Wajik', 50: '6 Keriting', 51: 'Ace Hati', 52: '9 Wajik' };
 
         // --- Seleksi Elemen DOM ---
@@ -160,6 +157,7 @@
         };
         const senderScrollArea = document.getElementById('sender-scroll-area');
         const cameraFeed = document.getElementById('camera-feed');
+        // ... (sisa seleksi elemen sama)
         const timerDisplay = document.getElementById('timer-display');
         const modeSelectorContainer = document.getElementById('mode-selector-container');
         const recordButton = document.getElementById('record-button');
@@ -173,6 +171,7 @@
         const calcKeysContainer = document.getElementById('calc-keys-container');
         const customThumpSection = document.getElementById('custom-thump-section');
         const customPresetContainer = document.getElementById('custom-preset-container');
+
 
         // --- Fungsi Utilitas ---
         function showNotification(message) {
@@ -201,10 +200,10 @@
 
         // --- Manajemen Tampilan (View) ---
         function showView(viewName) {
-            // Logika untuk menyimpan posisi scroll tidak lagi diperlukan
-            // if (views.sender.style.display === 'flex') {
-            //     lastSenderScrollPosition = senderScrollArea.scrollTop;
-            // }
+            // Saat meninggalkan halaman sender, simpan posisi scroll terakhir
+            if (views.sender.style.display === 'flex') {
+                lastSenderScrollPosition = senderScrollArea.scrollTop;
+            }
 
             Object.values(views).forEach(view => view.style.display = 'none');
             views[viewName].style.display = 'flex';
@@ -217,16 +216,18 @@
                 stopTimer();
             }
             
+            // Saat kembali ke halaman sender, kembalikan ke posisi scroll terakhir
             if (viewName === 'sender') {
                 initializeSenderView();
-                // Logika untuk mengembalikan posisi scroll tidak lagi diperlukan
-                // requestAnimationFrame(() => {
-                //     senderScrollArea.scrollTop = lastSenderScrollPosition;
-                // });
+                requestAnimationFrame(() => {
+                    senderScrollArea.scrollTop = lastSenderScrollPosition;
+                });
             }
         }
 
-        // --- Logika Tampilan Penyamaran ---
+        // Sisa kode JavaScript tidak perlu diubah...
+        // ... (Kode startCamera, stopCamera, formatTime, dll. tetap sama)
+
         async function startCamera() {
             if (stream) return;
             try {
@@ -293,7 +294,6 @@
             });
         }
 
-        // --- Logika Tampilan Sender ---
         function initializeSenderView() {
             const myCode = localStorage.getItem('myCode');
             const accompliceCode = localStorage.getItem('accompliceCode');
@@ -370,12 +370,9 @@
             }
         }
 
-        // --- Inisialisasi Aplikasi ---
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Pasang event listener ---
             recordButton.addEventListener('click', () => showView('sender'));
             settingsButton.addEventListener('click', () => showView('settings'));
-            
             backToCameraBtn.addEventListener('click', () => showView('disguise'));
             backFromSettingsBtn.addEventListener('click', () => showView('disguise'));
             
@@ -385,13 +382,7 @@
                     textInput.value = "";
                 }
             });
-
-            // --- Di sini Anda bisa menambahkan event listener untuk 'two finger swipe down' ---
-            // document.body.addEventListener('touchstart', ...);
-            // document.body.addEventListener('touchmove', ...);
-            // ... dst untuk mendeteksi gestur dan memanggil window.location.href = 'main.html';
             
-            // --- Jalankan fungsi setup awal ---
             populateModeSelector();
             createSenderButtons();
             showView('disguise');
