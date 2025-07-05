@@ -58,10 +58,10 @@
     .modal-title { font-size: 1.2em; margin-top: 0; margin-bottom: 20px; }
     .modal-buttons { display: flex; gap: 15px; margin-top: 20px; }
     .modal-buttons button, .modal-content > button { flex: 1; padding: 12px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
-    #acceptBtn, #shareBtn, #goToSettingsBtn { background-color: #28a745; color: white; }
-    #acceptBtn:hover, #shareBtn:hover, #goToSettingsBtn:hover { background-color: #218838; }
-    #denyBtn, #copyBtn { background-color: #6c757d; color: white; }
-    #denyBtn:hover, #copyBtn:hover { background-color: #5a6268; }
+    #acceptBtn, #shareBtn, #goToSettingsBtn, #generateSimpleLinkBtn, #generateDisguiseLinkBtn { background-color: #28a745; color: white; }
+    #acceptBtn:hover, #shareBtn:hover, #goToSettingsBtn:hover, #generateSimpleLinkBtn:hover, #generateDisguiseLinkBtn:hover { background-color: #218838; }
+    #denyBtn, #copyBtn, #cancelChoiceBtn { background-color: #6c757d; color: white; }
+    #denyBtn:hover, #copyBtn:hover, #cancelChoiceBtn:hover { background-color: #5a6268; }
     #guestLinkInput { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: #ccc; border-radius: 8px; text-align: center; font-size: 0.9em; }
   </style>
 </head>
@@ -94,7 +94,7 @@
         </a>
       
         <a href="api.html" class="menu-item">
-          <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49 1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l-.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2-3.46c.12-.22-.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
           <span>Pengaturan</span>
         </a>      
         <a href="instructions.html" class="menu-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span>Panduan</span></a>
@@ -110,15 +110,24 @@
   <div id="requestModal" class="modal-overlay">
     <div class="modal-content"><p class="modal-title" id="requestMessage"></p><div class="modal-buttons"><button id="denyBtn">Tolak</button><button id="acceptBtn">Izinkan</button></div></div>
   </div>
-
   <div id="shareModal" class="modal-overlay">
     <div class="modal-content"><p class="modal-title">Bagikan Link Tamu</p><input type="text" id="guestLinkInput" readonly><div class="modal-buttons"><button id="copyBtn">Salin</button><button id="shareBtn">Bagikan</button></div></div>
   </div>
-  
   <div id="setupModal" class="modal-overlay">
     <div class="modal-content"><p class="modal-title">Selamat Datang di Obscura!</p><p style="margin-bottom: 25px;">Anda belum mengatur Nama dan ID. Klik tombol di bawah untuk mengaturnya.</p><button id="goToSettingsBtn">Atur Identitas</button></div>
   </div>
   
+  <div id="viewChoiceModal" class="modal-overlay">
+    <div class="modal-content">
+      <p class="modal-title">Pilih Tipe Tampilan Tamu</p>
+      <div class="modal-buttons" style="flex-direction: column;">
+        <button id="generateSimpleLinkBtn">Tampilan Simple</button>
+        <button id="generateDisguiseLinkBtn">Tampilan Disguise (Kamera)</button>
+      </div>
+      <button id="cancelChoiceBtn" style="width: 100%; margin-top: 15px;">Batal</button>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -136,7 +145,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Variabel Elemen DOM
+    // --- Variabel Elemen DOM (Termasuk Modal Baru) ---
     const setupModal = document.getElementById('setupModal');
     const goToSettingsBtn = document.getElementById('goToSettingsBtn');
     const guestLinkBtn = document.getElementById('guestLinkBtn');
@@ -153,6 +162,10 @@
     const guestLinkInput = document.getElementById('guestLinkInput');
     const copyBtn = document.getElementById('copyBtn');
     const shareBtn = document.getElementById('shareBtn');
+    const viewChoiceModal = document.getElementById('viewChoiceModal');
+    const generateSimpleLinkBtn = document.getElementById('generateSimpleLinkBtn');
+    const generateDisguiseLinkBtn = document.getElementById('generateDisguiseLinkBtn');
+    const cancelChoiceBtn = document.getElementById('cancelChoiceBtn');
     
     let currentConnectionType = null;
 
@@ -273,8 +286,8 @@
         else userCodeDisplay.textContent = 'Identitas Belum Diatur';
     }
 
+    // --- Fungsi untuk Show/Hide Modal ---
     function hideRequestModal() { requestModal.classList.remove('visible'); }
-
     function showRequestModal(requesterCode, requesterName = 'Pengguna') {
         const myCode = localStorage.getItem('myCode');
         requestMessage.textContent = `${requesterName} (${requesterCode}) ingin terkoneksi`;
@@ -291,47 +304,74 @@
             hideRequestModal();
         };
     }
-
     function hideShareModal() { shareModal.classList.remove('visible'); }
-
     function showShareModal(url) {
         guestLinkInput.value = url;
         shareModal.classList.add('visible');
     }
+    function hideViewChoiceModal() { viewChoiceModal.classList.remove('visible'); }
+    function showViewChoiceModal() { viewChoiceModal.classList.add('visible'); }
+
+    // --- FUNGSI BARU UNTUK MEMBUAT LINK ---
+    async function generateAndShowLink(viewType = 'simple') {
+      const myCode = localStorage.getItem('myCode');
+      if (!myCode) { showSetupModal(); return; }
+
+      // Bersihkan token lama (jika ada) untuk host ini
+      try {
+        const tokensRef = ref(db, 'guestTokens');
+        const q = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
+        const snapshot = await get(q);
+        if (snapshot.exists()) {
+          const promises = [];
+          snapshot.forEach(child => { promises.push(remove(child.ref)); });
+          await Promise.all(promises);
+        }
+      } catch (error) { console.error("Gagal membersihkan token lama:", error); }
+
+      // Buat token baru
+      const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await set(ref(db, `guestTokens/${token}`), { hostId: myCode, createdAt: Date.now() });
+      
+      // Buat URL berdasarkan pilihan view
+      let url = `${location.origin}${location.pathname.replace('main.html', '')}guest.html?token=${token}`;
+      if (viewType === 'disguise') {
+        url += '&view=disguise';
+      }
+
+      // Tampilkan modal untuk berbagi link
+      showShareModal(url);
+    }
     
     // --- Event Listeners ---
-
-    goToSettingsBtn.addEventListener('click', () => {
-        window.location.href = 'api.html';
-    });
+    goToSettingsBtn.addEventListener('click', () => { window.location.href = 'api.html'; });
     
-    guestLinkBtn.addEventListener('click', async (e) => {
+    // Listener untuk tombol "Buat Link Tamu" sekarang hanya membuka modal pilihan
+    guestLinkBtn.addEventListener('click', (e) => {
         e.preventDefault();
         const myCode = localStorage.getItem('myCode');
         if(!myCode) { showSetupModal(); return; }
-        
-        try {
-            const tokensRef = ref(db, 'guestTokens');
-            const q = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
-            const snapshot = await get(q);
-            if (snapshot.exists()) {
-                const promises = [];
-                snapshot.forEach(child => { promises.push(remove(child.ref)); });
-                await Promise.all(promises);
-            }
-        } catch (error) { console.error("Gagal membersihkan token lama:", error); }
-        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
-        await set(ref(db, `guestTokens/${token}`), { hostId: myCode, createdAt: Date.now() });
-        showShareModal(`${location.origin}${location.pathname.replace('main.html','')}guest.html?token=${token}`);
+        showViewChoiceModal();
     });
+
+    // Listeners untuk tombol-tombol di modal pilihan
+    generateSimpleLinkBtn.addEventListener('click', () => {
+        hideViewChoiceModal();
+        generateAndShowLink('simple');
+    });
+
+    generateDisguiseLinkBtn.addEventListener('click', () => {
+        hideViewChoiceModal();
+        generateAndShowLink('disguise');
+    });
+
+    cancelChoiceBtn.addEventListener('click', hideViewChoiceModal);
 
     disconnectBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         const myCode = localStorage.getItem('myCode');
         if (!myCode) return;
-
         showToast("Memutuskan koneksi...");
-
         try {
             if (currentConnectionType === 'partner') {
                 const partnerCode = localStorage.getItem('accompliceCode');
@@ -380,6 +420,7 @@
 
     requestModal.addEventListener('click', (e) => { if (e.target === requestModal) hideRequestModal(); });
     shareModal.addEventListener('click', (e) => { if (e.target === shareModal) hideShareModal(); });
+    viewChoiceModal.addEventListener('click', (e) => { if (e.target === viewChoiceModal) hideViewChoiceModal(); });
 
     // --- Inisialisasi Halaman ---
     initializeAppLogic();
