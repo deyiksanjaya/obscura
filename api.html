@@ -39,6 +39,8 @@
     <h2>Identitas Anda</h2>
     <input type="text" id="userName" placeholder="Masukkan nama Anda">
     <div id="nameStatus" class="status-text"></div>
+    <!-- PERUBAIKAN: Tombol untuk menyimpan nama, menggantikan fungsi "Enter" -->
+    <button id="saveNameBtn" style="display:none; margin-top: 10px;">Simpan Nama</button>
     <input type="text" id="uniqueCode" maxlength="6" placeholder="6 digit angka" disabled>
     <div id="codeStatus" class="status-text"></div>
     <button id="resetCodeBtn" style="display:none; margin-top: 10px;">Ganti Identitas</button>
@@ -100,6 +102,7 @@
     // --- Elemen DOM ---
     const userNameInput = document.getElementById('userName');
     const nameStatus = document.getElementById('nameStatus');
+    const saveNameBtn = document.getElementById('saveNameBtn'); // <-- BARU
     const codeInput = document.getElementById('uniqueCode');
     const codeStatus = document.getElementById('codeStatus');
     const resetBtn = document.getElementById('resetCodeBtn');
@@ -175,32 +178,44 @@
         codeInput.value = myCode;
         codeInput.disabled = true;
         userNameInput.disabled = false;
-        nameStatus.textContent = "Masukkan nama Anda, lalu tekan Enter.";
+        nameStatus.textContent = "Masukkan nama Anda, lalu tekan tombol 'Simpan Nama'.";
+        saveNameBtn.style.display = 'block'; // Tampilkan tombol simpan
         
-        userNameInput.addEventListener('keydown', async (e) => {
-            if (e.key === 'Enter' && userNameInput.value.trim()) {
-                const newName = userNameInput.value.trim();
+        saveNameBtn.addEventListener('click', async () => {
+            const newName = userNameInput.value.trim();
+            if (newName) {
                 await update(ref(db, `users/${myCode}`), { name: newName });
                 localStorage.setItem('myName', newName);
                 showPopup("Nama berhasil diperbarui!");
                 setTimeout(() => location.reload(), 1500);
+            } else {
+                showPopup("Nama tidak boleh kosong.");
             }
         });
     }
     
+    // --- PERBAIKAN: Logika untuk pengguna baru ---
     function setupNewUser() {
-        nameStatus.textContent = "1. Masukkan nama, lalu tekan Enter.";
-        userNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && userNameInput.value.trim()) {
-                const newName = userNameInput.value.trim();
+        nameStatus.textContent = "1. Masukkan nama, lalu tekan tombol di bawah.";
+        saveNameBtn.style.display = 'block'; // Tampilkan tombol simpan nama
+
+        saveNameBtn.addEventListener('click', () => {
+            const newName = userNameInput.value.trim();
+            if (newName) {
                 localStorage.setItem('myName', newName);
                 userNameInput.disabled = true;
+                saveNameBtn.style.display = 'none'; // Sembunyikan tombol setelah diklik
+                
                 codeInput.disabled = false;
                 nameStatus.textContent = `Nama disimpan: ${newName}`;
                 codeStatus.textContent = "2. Sekarang masukkan 6 digit ID Anda.";
-                codeInput.focus();
+                codeInput.focus(); // Pindahkan fokus secara eksplisit
+            } else {
+                showPopup("Nama tidak boleh kosong.");
             }
         });
+
+        // Event listener untuk input kode tetap sama
         codeInput.addEventListener('input', handleNewCodeInput);
     }
 
@@ -229,36 +244,23 @@
         const connRef = ref(db, `connections/${myCode}`);
         onValue(connRef, async (snap) => {
             const state = snap.val() || {};
-
-            // **PERBAIKAN UTAMA**: Jika koneksi baru saja terbentuk (ada 'partner' dan
-            // juga sisa data 'requestTo'), ini berarti permintaan kita diterima.
-            // Kita harus membersihkan 'requestTo' untuk mencegah bug saat putus nanti.
             if (state.partner && state.requestTo) {
                 await remove(ref(db, `connections/${myCode}/requestTo`));
-                // Hentikan eksekusi. Penghapusan akan memicu listener ini lagi
-                // dengan state yang sudah bersih, yang akan menampilkan UI dengan benar.
                 return;
             }
-
-            // (Opsional tapi baik) Lakukan hal yang sama jika kita menerima permintaan
-            // dan permintaan itu diterima, bersihkan 'requestFrom'.
             if (state.partner && state.requestFrom) {
                  await remove(ref(db, `connections/${myCode}/requestFrom`));
                  return;
             }
-
-            // Lanjutkan untuk memperbarui UI dengan state yang (sekarang) bersih.
             await updatePartnerUI(state);
         });
     }
 
     // --- Manajer UI Partner ---
     async function updatePartnerUI(state) {
-        // State 1: Terkoneksi dengan partner
         if (state.partner) {
             const partnerCode = state.partner;
             const partnerName = (await get(ref(db, `users/${partnerCode}`))).val()?.name || "Partner";
-
             localStorage.setItem('accompliceCode', partnerCode);
             accompliceInput.value = `${partnerName} (${partnerCode})`;
             accompliceInput.disabled = true;
@@ -267,11 +269,9 @@
             cancelRequestBtn.style.display = 'none';
             disconnectBtn.style.display = 'block';
         } 
-        // State 2: Permintaan koneksi terkirim
         else if (state.requestTo) {
             const pendingPartnerId = state.requestTo;
             const partnerName = (await get(ref(db, `users/${pendingPartnerId}`))).val()?.name || pendingPartnerId;
-
             localStorage.removeItem('accompliceCode');
             accompliceInput.value = '';
             accompliceInput.disabled = true;
@@ -280,7 +280,6 @@
             cancelRequestBtn.style.display = 'block';
             disconnectBtn.style.display = 'none';
         }
-        // State 3: Idle (Tidak ada koneksi, permintaan, atau baru saja putus)
         else {
             localStorage.removeItem('accompliceCode');
             accompliceInput.value = '';
