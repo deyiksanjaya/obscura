@@ -127,8 +127,9 @@
   </div>
   
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    // Menggunakan versi SDK Firebase yang lebih baru
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -355,10 +356,32 @@
     function hideViewChoiceModal() { viewChoiceModal.classList.remove('visible'); }
     function showViewChoiceModal() { viewChoiceModal.classList.add('visible'); }
 
+    /**
+     * UPDATED FUNCTION
+     * Generates a guest link, fetches the user's ntfy.sh topic, and includes it in the URL.
+     * @param {string} viewType - The type of view for the guest ('simple' or 'disguise').
+     */
     async function generateAndShowLink(viewType = 'simple') {
       const myCode = localStorage.getItem('myCode');
-      if (!myCode) { showSetupModal(); return; }
+      if (!myCode) { 
+        showSetupModal(); 
+        return; 
+      }
 
+      // 1. Ambil ntfyTopic dari node pengguna di Firebase
+      let ntfyTopic = null;
+      try {
+          const userRef = ref(db, `users/${myCode}`);
+          const userSnap = await get(userRef);
+          if (userSnap.exists() && userSnap.val().ntfyTopic) {
+              ntfyTopic = userSnap.val().ntfyTopic;
+          }
+      } catch (error) {
+          console.error("Gagal mengambil ntfyTopic:", error);
+          showToast("Gagal mengambil info ntfy, link dibuat tanpa notifikasi.");
+      }
+
+      // 2. Bersihkan token tamu lama yang mungkin ada (logika yang sudah ada)
       try {
         const tokensRef = ref(db, 'guestTokens');
         const q = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
@@ -370,13 +393,24 @@
         }
       } catch (error) { console.error("Gagal membersihkan token lama:", error); }
 
+      // 3. Buat token baru (logika yang sudah ada)
       const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       await set(ref(db, `guestTokens/${token}`), { hostId: myCode, createdAt: Date.now() });
       
+      // 4. Bangun URL dasar
       let url = `${location.origin}${location.pathname.replace('main.html', '')}guest.html?token=${token}`;
+      
+      // 5. Tambahkan parameter view
       if (viewType === 'disguise') {
         url += '&view=disguise';
       }
+
+      // 6. Tambahkan parameter ntfyTopic jika ada
+      if (ntfyTopic) {
+          url += `&ntfy=${ntfyTopic}`;
+      }
+      
+      // 7. Tampilkan modal untuk berbagi link
       showShareModal(url);
     }
     
