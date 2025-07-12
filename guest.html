@@ -27,13 +27,30 @@
         /* Status & General */
         .status-container {
             display: flex; 
-            flex-direction: column;
+            flex-direction: column; /* Mengubah arah flex untuk tombol */
             justify-content: center; 
             align-items: center; 
             height: 100vh;
             font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
         }
         .hidden-view { display: none !important; }
+
+        /* Style untuk Tombol Fullscreen */
+        #fullscreenBtn {
+            padding: 12px 25px;
+            margin-top: 20px;
+            font-family: 'Cardo', serif;
+            font-size: 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #fullscreenBtn:hover {
+            background-color: rgba(255,255,255,0.15);
+        }
 
         /* Style untuk Tampilan Simple */
         .simple-view {
@@ -88,7 +105,8 @@
 
     <div id="statusContainer" class="status-container">
         <p id="statusMessage">Menghubungkan...</p>
-        <!-- Tombol fullscreen sudah dihapus dari sini -->
+        <!-- Tombol untuk memicu fullscreen -->
+        <button id="fullscreenBtn" class="hidden-view">Masuk Layar Penuh</button>
     </div>
     <div id="view-simple" class="simple-view hidden-view">
         <section>
@@ -177,8 +195,9 @@
             "10 Hati", "6 Sekop"
         ];
         
+        // --- FUNGSI BARU: Meminta Fullscreen (Kompatibel Multi-Browser) ---
         function requestAppFullScreen() {
-            const elem = document.documentElement;
+            const elem = document.documentElement; // Targetkan seluruh halaman
             if (elem.requestFullscreen) {
                 elem.requestFullscreen().catch(err => console.error(err));
             } else if (elem.webkitRequestFullscreen) { /* Safari, Chrome, Opera */
@@ -201,6 +220,7 @@
         async function initializeGuestSession() {
             const statusContainer = document.getElementById('statusContainer');
             const statusMessage = document.getElementById('statusMessage');
+            const fullscreenBtn = document.getElementById('fullscreenBtn'); // Ambil tombol fullscreen
             
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
@@ -224,14 +244,24 @@
                 await set(guestPresenceRef, { connectedAt: Date.now(), view: viewType });
                 onDisconnect(guestPresenceRef).remove();
 
-                // --- PERUBAIKAN ALUR: Langsung tampilkan view yang sesuai ---
-                statusContainer.classList.add('hidden-view');
-                
-                if (viewType === 'disguise') {
-                    setupDisguiseView();
-                } else {
-                    setupSimpleView();
-                }
+                // --- PERUBAIKAN ALUR: Tampilkan tombol fullscreen ---
+                statusMessage.textContent = "Koneksi berhasil. Siap untuk masuk.";
+                fullscreenBtn.classList.remove('hidden-view');
+
+                fullscreenBtn.addEventListener('click', () => {
+                    // 1. Minta fullscreen
+                    requestAppFullScreen();
+                    
+                    // 2. Sembunyikan container status
+                    statusContainer.classList.add('hidden-view');
+                    
+                    // 3. Tampilkan view yang sesuai
+                    if (viewType === 'disguise') {
+                        setupDisguiseView();
+                    } else {
+                        setupSimpleView();
+                    }
+                }, { once: true }); // Opsi 'once' agar event listener hanya berjalan sekali
 
             } catch (error) {
                 console.error("Initialization error:", error);
@@ -279,12 +309,7 @@
         
         function setupDisguiseView() {
             document.body.classList.add('no-scroll');
-            const disguiseWrapper = document.getElementById('view-disguise-wrapper');
-            disguiseWrapper.classList.remove('hidden-view');
-            
-            // --- PERUBAIKAN: Tambahkan listener untuk memicu fullscreen pada tap pertama ---
-            disguiseWrapper.addEventListener('click', requestAppFullScreen, { once: true });
-
+            document.getElementById('view-disguise-wrapper').classList.remove('hidden-view');
             const viewDisguise = document.getElementById('view-disguise');
             const viewSender = document.getElementById('view-sender');
 
