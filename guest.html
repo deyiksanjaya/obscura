@@ -16,6 +16,11 @@
             min-height: 100%; 
             background: radial-gradient(ellipse at center, #111 0%, #000 100%);
             color: #e0e0e0;
+            /* PERUBAIKAN: Mencegah pengguna menyorot (highlight) konten */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* IE 10+ and Edge */
+            user-select: none;         /* Standard syntax */
         }
         .font-cardo { font-family: 'Cardo', serif; }
         .font-inter { font-family: 'Inter', sans-serif; }
@@ -42,9 +47,12 @@
         .simple-view h2 {
             font-size: 18px; color: #aaa; margin: 0 0 15px 0; font-weight: 400;
         }
+        /* Memungkinkan seleksi pada input field jika diperlukan */
         .simple-view input[type="text"] {
             width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border: none;
             border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #eee; text-align: center;
+            -webkit-user-select: text;
+            user-select: text;
         }
         .simple-view .numpad, .simple-view .calc-keys {
             display: grid; gap: 12px;
@@ -69,6 +77,12 @@
         .no-scroll { overflow: hidden; height: 100vh; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Memungkinkan seleksi pada input field di tampilan disguise */
+        #disguise-text-input {
+            -webkit-user-select: text;
+            user-select: text;
+        }
     </style>
 </head>
 <body class="bg-black">
@@ -235,17 +249,16 @@
             });
             
             let expression = "";
-            // --- PERUBAIKAN: Menambahkan logika untuk tombol hapus (backspace) ---
             setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, (type, value) => sendData(type, value));
                     expression = "";
-                } else if (key === '⌫') { // Logika untuk backspace
+                } else if (key === '⌫') { 
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
+                calcDisplay.textContent = expression || "0";
             });
         }
         
@@ -310,7 +323,6 @@
             });
 
             let expression = "";
-            // --- PERUBAIKAN: Menggunakan tombol hapus (backspace) yang konsisten ---
             setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, (type, value) => {
@@ -320,12 +332,12 @@
                         setTimeout(showCamera, 400);
                     });
                     expression = "";
-                } else if (key === '⌫') { // Logika untuk backspace
+                } else if (key === '⌫') { 
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
+                calcDisplay.textContent = expression || "0";
             }, true);
             
             showCamera();
@@ -333,7 +345,6 @@
 
         function setupCalculator(keysContainer, displayElement, onKeyPress, isDisguise = false) {
             keysContainer.innerHTML = '';
-            // --- PERUBAIKAN: Mengganti '.' dan '>' dengan ikon backspace '⌫' ---
             const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','0','⌫','=','+'];
             
             keys.forEach(key => {
@@ -355,7 +366,6 @@
                     const cardName = mnemonicaStack[num - 1];
                     sendCallback('text', cardName);
                 } else {
-                    // Evaluasi ekspresi matematika dengan aman
                     let result = new Function('return ' + expression.replace(/[^-()\d/*+.]/g, ''))();
                     if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
                     sendCallback('text', String(result));
@@ -373,7 +383,6 @@
                 document.getElementById('camera-feed').srcObject = cameraStream;
             } catch (err) {
                 console.error("Camera access error:", err);
-                // Menggunakan notifikasi custom, bukan alert
             }
         }
 
