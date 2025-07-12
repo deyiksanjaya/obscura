@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#000000">
+
+    <!-- UPDATED: Meta tags to prevent caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <title>Obscura - Guest Sender</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cardo:wght@400;700&display=swap" rel="stylesheet">
@@ -123,6 +129,14 @@
     </div>
 
     <script type="module">
+        // UPDATED: JavaScript check to force reload if page is loaded from cache
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted is true if the page is loaded from the back-forward cache
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, get, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
@@ -139,42 +153,32 @@
         const db = getDatabase(app);
         
         let hostId = null;
-        let ntfyTopic = null; // Will hold the ntfy.sh topic from URL
+        let ntfyTopic = null;
         let cameraStream = null;
         let timerInterval = null;
-         const mnemonicaStack = [
-          "4C", "2H", "7D", "3C", "4H", "6D", "AS", "5H", "9S", "2S",
-          "QH", "3D", "QC", "8H", "6S", "5S", "9H", "KC", "2D", "JH",
-          "3S", "8S", "6H", "10C", "5D", "KD", "2C", "3H", "8D", "5C",
-          "KS", "JD", "8C", "10S", "KH", "JC", "7S", "10H", "AD", "4S",
-          "7H", "4D", "AC", "9C", "JS", "QD", "7C", "QS", "10D", "6C",
-          "AH", "9D"
+        const mnemonicaStack = [
+            "4S", "2H", "7C", "3S", "4H", "6C", "AS", "5H", "9S", "2C",
+            "QH", "3C", "QS", "5S", "7H", "JC", "AH", "8S", "6H", "JS",
+            "5C", "KH", "10S", "3H", "8C", "KS", "3D", "JH", "9C", "KC",
+            "8H", "10C", "KD", "2S", "7D", "AC", "9H", "2D", "JD", "4C",
+            "6D", "8D", "4D", "AD", "9D", "QC", "7S", "10D", "5D", "QD",
+            "10H", "6S"
         ];
         
-        /**
-         * UPDATED FUNCTION
-         * Sends data to Firebase and, if ntfyTopic is set, also sends a notification to ntfy.sh.
-         * This is a parallel operation, not a failover.
-         * @param {string} type - The type of data (e.g., 'text', 'number').
-         * @param {string|number} value - The value to send.
-         * @returns {Promise<boolean>} - True if all sends were successful, false otherwise.
-         */
         async function sendData(type, value) {
             if (!hostId) {
                 console.error("Host ID tidak tersedia. Tidak dapat mengirim data.");
                 return false;
             }
 
-            // 1. Always attempt to send to Firebase
             const firebasePromise = set(ref(db, `data/${hostId}/${type}`), value)
                 .then(() => console.log(`Data (${type}: ${value}) terkirim via Firebase.`))
                 .catch(err => {
                     console.error("Firebase send error:", err);
-                    throw err; // Re-throw to be caught by Promise.all
+                    throw err;
                 });
 
-            // 2. Conditionally send to ntfy.sh
-            let ntfyPromise = Promise.resolve(); // Start with a resolved promise
+            let ntfyPromise = Promise.resolve();
             if (ntfyTopic) {
                 ntfyPromise = fetch(`https://ntfy.sh/${ntfyTopic}`, {
                     method: 'POST',
@@ -187,29 +191,27 @@
                 })
                 .catch(err => {
                     console.error("Ntfy send error:", err);
-                    throw err; // Re-throw
+                    throw err;
                 });
             }
 
-            // Await both promises and handle the outcome
             try {
                 await Promise.all([firebasePromise, ntfyPromise]);
-                return true; // Success
+                return true;
             } catch (error) {
                 console.error("Gagal mengirim data di salah satu atau kedua channel:", error);
-                // Show visual failure notification only in disguise view
                 const wrapper = document.getElementById('view-disguise-wrapper');
                 if (!wrapper.classList.contains('hidden-view')) {
                     const notificationPopup = document.getElementById('notification-popup');
                     notificationPopup.textContent = "Gagal Mengirim";
-                    notificationPopup.style.backgroundColor = 'rgba(220, 38, 38, 0.8)'; // Red
+                    notificationPopup.style.backgroundColor = 'rgba(220, 38, 38, 0.8)';
                     notificationPopup.classList.remove('opacity-0');
                     setTimeout(() => {
                         notificationPopup.classList.add('opacity-0');
                         setTimeout(() => { notificationPopup.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; }, 300);
                     }, 2500);
                 }
-                return false; // Failure
+                return false;
             }
         }
 
@@ -220,7 +222,7 @@
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
             const viewType = params.get('view') || 'simple'; 
-            ntfyTopic = params.get('ntfy'); // UPDATED: Get ntfy topic from URL
+            ntfyTopic = params.get('ntfy');
 
             if (ntfyTopic) {
                 console.log(`Notifikasi Ntfy diaktifkan untuk topik: ${ntfyTopic}`);
