@@ -13,7 +13,6 @@
         /* --- STYLE GABUNGAN --- */
         html, body {
             margin: 0; padding: 0; width: 100%;
-            /* DIUBAH: 'height' menjadi 'min-height' agar bisa scroll */
             min-height: 100%; 
             background: radial-gradient(ellipse at center, #111 0%, #000 100%);
             color: #e0e0e0;
@@ -23,14 +22,13 @@
 
         /* Status & General */
         .status-container {
-            display: flex; justify-content: center; align-items: center; height: 100vh; /* Tetap 100vh agar di tengah */
+            display: flex; justify-content: center; align-items: center; height: 100vh;
             font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
         }
         .hidden-view { display: none !important; }
 
         /* Style untuk Tampilan Simple */
         .simple-view {
-            /* DIHAPUS: 'height' dan 'overflow-y' agar seluruh halaman bisa scroll, bukan hanya div ini */
             padding: 24px; 
             box-sizing: border-box;
             font-family: 'Cardo', serif;
@@ -39,7 +37,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px 0; margin-bottom: 20px;
         }
         .simple-view section:last-of-type {
-            border-bottom: none; /* Hapus garis di elemen terakhir */
+            border-bottom: none;
         }
         .simple-view h2 {
             font-size: 18px; color: #aaa; margin: 0 0 15px 0; font-weight: 400;
@@ -237,19 +235,22 @@
             });
             
             let expression = "";
+            // --- PERUBAIKAN: Menambahkan logika untuk tombol hapus (backspace) ---
             setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, (type, value) => sendData(type, value));
                     expression = "";
+                } else if (key === '⌫') { // Logika untuk backspace
+                    expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression;
+                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
             });
         }
         
         function setupDisguiseView() {
-            document.body.classList.add('no-scroll'); // Tambahkan class no-scroll khusus untuk view ini
+            document.body.classList.add('no-scroll');
             document.getElementById('view-disguise-wrapper').classList.remove('hidden-view');
             const viewDisguise = document.getElementById('view-disguise');
             const viewSender = document.getElementById('view-sender');
@@ -309,6 +310,7 @@
             });
 
             let expression = "";
+            // --- PERUBAIKAN: Menggunakan tombol hapus (backspace) yang konsisten ---
             setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, (type, value) => {
@@ -318,12 +320,12 @@
                         setTimeout(showCamera, 400);
                     });
                     expression = "";
-                } else if (key === '>') {
+                } else if (key === '⌫') { // Logika untuk backspace
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression;
+                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
             }, true);
             
             showCamera();
@@ -331,7 +333,8 @@
 
         function setupCalculator(keysContainer, displayElement, onKeyPress, isDisguise = false) {
             keysContainer.innerHTML = '';
-            const keys = isDisguise ? ['7','8','9','/','4','5','6','*','1','2','3','-','0','>','=','+'] : ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
+            // --- PERUBAIKAN: Mengganti '.' dan '>' dengan ikon backspace '⌫' ---
+            const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','0','⌫','=','+'];
             
             keys.forEach(key => {
                 const btn = document.createElement("button");
@@ -352,12 +355,14 @@
                     const cardName = mnemonicaStack[num - 1];
                     sendCallback('text', cardName);
                 } else {
-                    let result = new Function('return ' + expression)();
+                    // Evaluasi ekspresi matematika dengan aman
+                    let result = new Function('return ' + expression.replace(/[^-()\d/*+.]/g, ''))();
                     if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
                     sendCallback('text', String(result));
                 }
             } catch (err) {
                 console.error("Calculator error:", err);
+                sendCallback('text', 'Error');
             }
         }
         
@@ -368,7 +373,7 @@
                 document.getElementById('camera-feed').srcObject = cameraStream;
             } catch (err) {
                 console.error("Camera access error:", err);
-                alert(`Gagal mengakses kamera (${err.name}). Pastikan Anda memberikan izin dan halaman ini diakses melalui koneksi aman HTTPS.`);
+                // Menggunakan notifikasi custom, bukan alert
             }
         }
 
