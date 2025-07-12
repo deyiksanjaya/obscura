@@ -58,8 +58,8 @@
     .modal-title { font-size: 1.2em; margin-top: 0; margin-bottom: 20px; }
     .modal-buttons { display: flex; gap: 15px; margin-top: 20px; }
     .modal-buttons button, .modal-content > button { flex: 1; padding: 12px 20px; border-radius: 8px; border: none; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
-    #acceptBtn, #shareBtn, #goToSettingsBtn, #generateSimpleLinkBtn, #generateDisguiseLinkBtn { background-color: #28a745; color: white; }
-    #acceptBtn:hover, #shareBtn:hover, #goToSettingsBtn:hover, #generateSimpleLinkBtn:hover, #generateDisguiseLinkBtn:hover { background-color: #218838; }
+    #acceptBtn, #shareBtn, #goToSettingsBtn, .generate-btn { background-color: #28a745; color: white; }
+    #acceptBtn:hover, #shareBtn:hover, #goToSettingsBtn:hover, .generate-btn:hover { background-color: #218838; }
     #denyBtn, #copyBtn, #cancelChoiceBtn { background-color: #6c757d; color: white; }
     #denyBtn:hover, #copyBtn:hover, #cancelChoiceBtn:hover { background-color: #5a6268; }
     #guestLinkInput { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: #ccc; border-radius: 8px; text-align: center; font-size: 0.9em; }
@@ -77,27 +77,22 @@
             <img src="https://img.icons8.com/ios/50/listening--v1.png" alt="Receiver Icon" style="filter: invert(1);" />
             <br><span>Receiver</span>
         </a>
-
         <a href="sender.html" class="menu-item" id="sender">
             <img src="https://img.icons8.com/ios/50/voice-recognition-scan.png" alt="Sender Icon" style="filter: invert(1);" />
             <br><span>Sender</span>
         </a>
-
         <a href="camera.html" class="menu-item" id="cameraThumper">
             <img src="https://img.icons8.com/ios/50/camera--v4.png" alt="Thumper Kamera Icon" style="filter: invert(1);" />
             <br><span>Thumper Kamera</span>
         </a>
-
         <a href="api.html" class="menu-item">
             <img src="https://img.icons8.com/ios/50/settings--v1.png" alt="Settings Icon" style="filter: invert(1);" />
             <br><span>Pengaturan</span>
         </a>
-
         <a href="instructions.html" class="menu-item">
             <img src="https://img.icons8.com/ios/50/book--v1.png" alt="Panduan Icon" style="filter: invert(1);" />
             <br><span>Panduan</span>
         </a>
-
         <a href="#" class="menu-item" id="guestActionButton">
             <img id="guestActionImg" src="https://img.icons8.com/ios-filled/50/link--v1.png" alt="Guest Link Icon" style="filter: invert(1);" />
             <br>
@@ -115,19 +110,21 @@
   <div id="setupModal" class="modal-overlay">
     <div class="modal-content"><p class="modal-title">Selamat Datang di Obscura!</p><p style="margin-bottom: 25px;">Anda belum mengatur Nama dan ID. Klik tombol di bawah untuk mengaturnya.</p><button id="goToSettingsBtn">Atur Identitas</button></div>
   </div>
+  <!-- UPDATED MODAL -->
   <div id="viewChoiceModal" class="modal-overlay">
     <div class="modal-content">
       <p class="modal-title">Pilih Tipe Tampilan Tamu</p>
-      <div class="modal-buttons" style="flex-direction: column;">
-        <button id="generateSimpleLinkBtn">Tampilan Simple</button>
-        <button id="generateDisguiseLinkBtn">Tampilan Disguise (Kamera)</button>
+      <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
+        <button id="generateSimpleLinkBtn" class="generate-btn">Tampilan Simple</button>
+        <button id="generateSimpleNtfyLinkBtn" class="generate-btn">Tampilan Simple (Notifikasi)</button>
+        <button id="generateDisguiseLinkBtn" class="generate-btn">Tampilan Disguise (Kamera)</button>
+        <button id="generateDisguiseNtfyLinkBtn" class="generate-btn">Tampilan Disguise (Notifikasi)</button>
       </div>
       <button id="cancelChoiceBtn" style="width: 100%; margin-top: 15px;">Batal</button>
     </div>
   </div>
   
   <script type="module">
-    // Menggunakan versi SDK Firebase yang lebih baru
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getDatabase, ref, onValue, set, remove, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
@@ -144,12 +141,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Variabel Elemen DOM Disesuaikan
     const setupModal = document.getElementById('setupModal');
     const goToSettingsBtn = document.getElementById('goToSettingsBtn');
     const guestActionButton = document.getElementById('guestActionButton');
     const guestActionText = document.getElementById('guestActionText');
-    const guestActionImg = document.getElementById('guestActionImg'); // Ditargetkan ke <img>
+    const guestActionImg = document.getElementById('guestActionImg');
     const info = document.getElementById('connectionInfo');
     const userCodeDisplay = document.getElementById('userCodeDisplay');
     const receiverLink = document.getElementById('receiver');
@@ -163,13 +159,15 @@
     const copyBtn = document.getElementById('copyBtn');
     const shareBtn = document.getElementById('shareBtn');
     const viewChoiceModal = document.getElementById('viewChoiceModal');
-    const generateSimpleLinkBtn = document.getElementById('generateSimpleLinkBtn');
-    const generateDisguiseLinkBtn = document.getElementById('generateDisguiseLinkBtn');
     const cancelChoiceBtn = document.getElementById('cancelChoiceBtn');
+    // UPDATED: Get all new buttons
+    const generateSimpleLinkBtn = document.getElementById('generateSimpleLinkBtn');
+    const generateSimpleNtfyLinkBtn = document.getElementById('generateSimpleNtfyLinkBtn');
+    const generateDisguiseLinkBtn = document.getElementById('generateDisguiseLinkBtn');
+    const generateDisguiseNtfyLinkBtn = document.getElementById('generateDisguiseNtfyLinkBtn');
     
     let currentConnectionType = null;
 
-    // URL Ikon Disiapkan untuk Diganti-ganti
     const iconUrl = {
         link: "https://img.icons8.com/ios-filled/50/link--v1.png",
         brokenLink: "https://img.icons8.com/wired/64/broken-link.png"
@@ -186,7 +184,6 @@
         e.preventDefault();
         const myCode = localStorage.getItem('myCode');
         if (!myCode) return;
-
         showToast("Memutuskan koneksi...");
         try {
             if (currentConnectionType === 'partner') {
@@ -210,15 +207,12 @@
 
     function showSetupModal() { setupModal.classList.add('visible'); }
 
-    // Fungsi setMenuState Disesuaikan
     function setMenuState(connectionType, partnerData = null) {
         currentConnectionType = connectionType;
-        
         guestActionText.textContent = "Buat Link Tamu";
         guestActionImg.src = iconUrl.link;
         guestActionButton.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
         guestActionButton.onclick = handleCreateGuestLink;
-        
         receiverLink.classList.add('disabled');
         senderLink.classList.add('disabled');
         info.style.color = '#999';
@@ -229,17 +223,14 @@
             info.textContent = partnerData.name ? `${partnerData.name} (${partnerData.id})` : partnerData.id;
             receiverLink.classList.remove('disabled');
             senderLink.classList.remove('disabled');
-            
             guestActionText.textContent = "Putuskan Koneksi";
             guestActionImg.src = iconUrl.brokenLink;
             guestActionButton.style.backgroundColor = '#4a2525';
             guestActionButton.onclick = handleDisconnect;
-
         } else if (connectionType === 'guest') {
             info.style.color = '#4caf50';
             info.textContent = "Tamu Terhubung";
             receiverLink.classList.remove('disabled');
-            
             guestActionText.textContent = "Putuskan Koneksi";
             guestActionImg.src = iconUrl.brokenLink;
             guestActionButton.style.backgroundColor = '#4a2525';
@@ -249,7 +240,6 @@
 
     function initializeAppLogic() {
         const myCode = localStorage.getItem('myCode');
-        
         if (!myCode) {
             showSetupModal();
             document.querySelectorAll('.menu-item').forEach(item => {
@@ -257,10 +247,8 @@
             });
             return;
         }
-
         updateUserCodeDisplay();
         setMenuState(null);
-
         onValue(ref(db, `connections/${myCode}/requestFrom`), async (snap) => {
             const requesterCode = snap.val();
             if (requesterCode && !currentConnectionType) { 
@@ -269,7 +257,6 @@
                 showRequestModal(requesterCode, requesterName); 
             }
         });
-
         onValue(ref(db, `connections/${myCode}/partner`), async (snap) => {
             const partnerCode = snap.val();
             if (partnerCode) {
@@ -282,7 +269,6 @@
                 setMenuState(null);
             }
         });
-
         onValue(ref(db, `guestConnections/${myCode}`), (snap) => {
             if (currentConnectionType !== 'partner') {
                 if (snap.exists()) {
@@ -309,17 +295,6 @@
     }
 
     async function copyToClipboard(text) {
-        if (!navigator.clipboard) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position="fixed"; textArea.style.left="-9999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try { document.execCommand('copy'); showToast("Link Tamu telah disalin!"); } catch (err) { showToast("Gagal menyalin link."); }
-            document.body.removeChild(textArea);
-            return;
-        }
         try { await navigator.clipboard.writeText(text); showToast("Link Tamu telah disalin!"); } catch (err) { showToast("Gagal menyalin link."); }
     }
 
@@ -358,30 +333,14 @@
 
     /**
      * UPDATED FUNCTION
-     * Generates a guest link, fetches the user's ntfy.sh topic, and includes it in the URL.
-     * @param {string} viewType - The type of view for the guest ('simple' or 'disguise').
+     * Generates a guest link based on view type and whether ntfy is requested.
+     * @param {string} viewType - 'simple' or 'disguise'.
+     * @param {boolean} useNtfy - Whether to include the ntfy.sh topic in the URL.
      */
-    async function generateAndShowLink(viewType = 'simple') {
+    async function generateAndShowLink(viewType = 'simple', useNtfy = false) {
       const myCode = localStorage.getItem('myCode');
-      if (!myCode) { 
-        showSetupModal(); 
-        return; 
-      }
+      if (!myCode) { showSetupModal(); return; }
 
-      // 1. Ambil ntfyTopic dari node pengguna di Firebase
-      let ntfyTopic = null;
-      try {
-          const userRef = ref(db, `users/${myCode}`);
-          const userSnap = await get(userRef);
-          if (userSnap.exists() && userSnap.val().ntfyTopic) {
-              ntfyTopic = userSnap.val().ntfyTopic;
-          }
-      } catch (error) {
-          console.error("Gagal mengambil ntfyTopic:", error);
-          showToast("Gagal mengambil info ntfy, link dibuat tanpa notifikasi.");
-      }
-
-      // 2. Bersihkan token tamu lama yang mungkin ada (logika yang sudah ada)
       try {
         const tokensRef = ref(db, 'guestTokens');
         const q = query(tokensRef, orderByChild('hostId'), equalTo(myCode));
@@ -393,38 +352,54 @@
         }
       } catch (error) { console.error("Gagal membersihkan token lama:", error); }
 
-      // 3. Buat token baru (logika yang sudah ada)
       const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       await set(ref(db, `guestTokens/${token}`), { hostId: myCode, createdAt: Date.now() });
       
-      // 4. Bangun URL dasar
       let url = `${location.origin}${location.pathname.replace('main.html', '')}guest.html?token=${token}`;
-      
-      // 5. Tambahkan parameter view
       if (viewType === 'disguise') {
         url += '&view=disguise';
       }
 
-      // 6. Tambahkan parameter ntfyTopic jika ada
-      if (ntfyTopic) {
-          url += `&ntfy=${ntfyTopic}`;
+      if (useNtfy) {
+        try {
+            const userRef = ref(db, `users/${myCode}`);
+            const userSnap = await get(userRef);
+            if (userSnap.exists() && userSnap.val().ntfyTopic) {
+                const ntfyTopic = userSnap.val().ntfyTopic;
+                url += `&ntfy=${ntfyTopic}`;
+                showToast("Link dengan notifikasi dibuat.");
+            } else {
+                showToast("Topik Ntfy tidak diatur. Link dibuat tanpa notifikasi.");
+            }
+        } catch (error) {
+            console.error("Gagal mengambil ntfyTopic:", error);
+            showToast("Gagal mengambil info ntfy, link dibuat tanpa notifikasi.");
+        }
       }
       
-      // 7. Tampilkan modal untuk berbagi link
       showShareModal(url);
     }
     
-    // Event Listeners
+    // UPDATED Event Listeners
     goToSettingsBtn.addEventListener('click', () => { window.location.href = 'api.html'; });
     
     generateSimpleLinkBtn.addEventListener('click', () => {
         hideViewChoiceModal();
-        generateAndShowLink('simple');
+        generateAndShowLink('simple', false);
+    });
+    generateSimpleNtfyLinkBtn.addEventListener('click', () => {
+        hideViewChoiceModal();
+        generateAndShowLink('simple', true);
     });
     generateDisguiseLinkBtn.addEventListener('click', () => {
         hideViewChoiceModal();
-        generateAndShowLink('disguise');
+        generateAndShowLink('disguise', false);
     });
+    generateDisguiseNtfyLinkBtn.addEventListener('click', () => {
+        hideViewChoiceModal();
+        generateAndShowLink('disguise', true);
+    });
+
     cancelChoiceBtn.addEventListener('click', hideViewChoiceModal);
 
     window.addEventListener('storage', (event) => {
