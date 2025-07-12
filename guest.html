@@ -163,12 +163,52 @@
             "10 Hati", "6 Sekop"
         ];
         
-        function sendData(type, value) {
-            if (hostId) {
-                set(ref(db, `data/${hostId}/${type}`), value);
-                return true;
+        // --- PERUBAHAN: Fungsi sendData diubah menjadi async dengan logika failover ---
+        async function sendData(type, value) {
+            if (!hostId) {
+                console.error("Host ID tidak tersedia. Tidak dapat mengirim data.");
+                return false;
             }
-            return false;
+
+            try {
+                // Jalur Utama: Mencoba mengirim via Firebase
+                await set(ref(db, `data/${hostId}/${type}`), value);
+                console.log(`Data (${type}: ${value}) terkirim via Firebase.`);
+                return true;
+            } catch (firebaseError) {
+                // Jalur Cadangan (Failover): Jika Firebase gagal, beralih ke ntfy
+                console.warn("Koneksi Firebase gagal. Mencoba jalur cadangan via ntfy...", firebaseError);
+                
+                const ntfyTopic = `obscura-failover-${hostId}`;
+                // Mengirim data dalam format JSON agar mudah diproses di sisi penerima
+                const ntfyPayload = JSON.stringify({ type, value });
+
+                try {
+                    await fetch(`https://ntfy.sh/${ntfyTopic}`, {
+                        method: 'POST',
+                        body: ntfyPayload,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Title': `Pesan Cadangan Obscura (${type})`,
+                            'Tags': 'warning,arrow_down'
+                        }
+                    });
+                    console.log(`Data (${type}: ${value}) terkirim via ntfy.`);
+                    
+                    // Memberi notifikasi visual bahwa mode cadangan aktif (hanya di tampilan disguise)
+                    const wrapper = document.getElementById('view-disguise-wrapper');
+                    if (!wrapper.classList.contains('hidden-view')) {
+                        const notificationPopup = document.getElementById('notification-popup');
+                        notificationPopup.textContent = "Mode Cadangan Aktif";
+                        notificationPopup.classList.remove('opacity-0');
+                        setTimeout(() => notificationPopup.classList.add('opacity-0'), 2500);
+                    }
+                    return true; // Sukses mengirim via failover
+                } catch (ntfyError) {
+                    console.error("Pengiriman via ntfy juga gagal:", ntfyError);
+                    return false; // Semua jalur pengiriman gagal
+                }
+            }
         }
 
         async function initializeGuestSession() {
@@ -219,9 +259,10 @@
             
             view.classList.remove('hidden-view');
 
-            textInput.addEventListener("keydown", (e) => {
+            // --- PERUBAHAN: Menambahkan async/await pada event handler ---
+            textInput.addEventListener("keydown", async (e) => {
                 if (e.key === "Enter" && textInput.value.trim()) {
-                    sendData('text', textInput.value.trim());
+                    await sendData('text', textInput.value.trim());
                     textInput.value = "";
                 }
             });
@@ -230,22 +271,24 @@
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
                 const btn = document.createElement("button");
                 btn.textContent = num;
-                btn.onclick = () => sendData('number', num);
+                // --- PERUBAHAN: Menambahkan async/await pada event handler ---
+                btn.onclick = async () => await sendData('number', num);
                 numpad.appendChild(btn);
             });
             
             let expression = "";
-            // --- PERUBAIKAN: Menambahkan logika untuk tombol hapus (backspace) ---
-            setupCalculator(calcKeys, calcDisplay, (key) => {
+            // --- PERUBAHAN: Menambahkan async/await pada callback ---
+            setupCalculator(calcKeys, calcDisplay, async (key) => {
                 if (key === '=') {
+                    // handleEquals akan memanggil sendData secara async
                     handleEquals(expression, (type, value) => sendData(type, value));
                     expression = "";
-                } else if (key === '⌫') { // Logika untuk backspace
+                } else if (key === '⌫') {
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
+                calcDisplay.textContent = expression || "0";
             });
         }
         
@@ -285,9 +328,11 @@
                 setTimeout(() => notificationPopup.classList.add('opacity-0'), 1500);
             };
 
-            textInput.addEventListener("keydown", (e) => {
+            // --- PERUBAHAN: Menambahkan async/await pada event handler ---
+            textInput.addEventListener("keydown", async (e) => {
                 if (e.key === "Enter" && textInput.value.trim()) {
-                    if(sendData('text', textInput.value.trim())) {
+                    const sent = await sendData('text', textInput.value.trim());
+                    if(sent) {
                         showNotif(`'${textInput.value.trim()}' terkirim`);
                     }
                     textInput.value = "";
@@ -300,8 +345,10 @@
                 const btn = document.createElement("button");
                 btn.textContent = num;
                 btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl font-cardo";
-                btn.onclick = () => {
-                    if(sendData('number', num)) {
+                // --- PERUBAHAN: Menambahkan async/await pada event handler ---
+                btn.onclick = async () => {
+                    const sent = await sendData('number', num);
+                    if(sent) {
                         showNotif(`'${num}' terkirim`);
                     }
                     setTimeout(showCamera, 400);
@@ -310,22 +357,23 @@
             });
 
             let expression = "";
-            // --- PERUBAIKAN: Menggunakan tombol hapus (backspace) yang konsisten ---
-            setupCalculator(calcKeys, calcDisplay, (key) => {
+            // --- PERUBAHAN: Menambahkan async/await pada callback ---
+            setupCalculator(calcKeys, calcDisplay, async (key) => {
                 if (key === '=') {
-                    handleEquals(expression, (type, value) => {
-                        if(sendData(type, value)) {
+                    handleEquals(expression, async (type, value) => {
+                        const sent = await sendData(type, value);
+                        if(sent) {
                             showNotif(`'${value}' terkirim`);
                         }
                         setTimeout(showCamera, 400);
                     });
                     expression = "";
-                } else if (key === '⌫') { // Logika untuk backspace
+                } else if (key === '⌫') {
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
+                calcDisplay.textContent = expression || "0";
             }, true);
             
             showCamera();
@@ -333,7 +381,6 @@
 
         function setupCalculator(keysContainer, displayElement, onKeyPress, isDisguise = false) {
             keysContainer.innerHTML = '';
-            // --- PERUBAIKAN: Mengganti '.' dan '>' dengan ikon backspace '⌫' ---
             const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','0','⌫','=','+'];
             
             keys.forEach(key => {
@@ -342,11 +389,13 @@
                 if (isDisguise) {
                     btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl font-cardo";
                 }
+                // onKeyPress sekarang bisa jadi async, jadi tidak perlu diubah di sini
                 btn.onclick = () => onKeyPress(key);
                 keysContainer.appendChild(btn);
             });
         }
 
+        // --- PERUBAHAN: sendCallback sekarang adalah fungsi async ---
         function handleEquals(expression, sendCallback) {
             try {
                 if (!expression) return;
@@ -355,7 +404,6 @@
                     const cardName = mnemonicaStack[num - 1];
                     sendCallback('text', cardName);
                 } else {
-                    // Evaluasi ekspresi matematika dengan aman
                     let result = new Function('return ' + expression.replace(/[^-()\d/*+.]/g, ''))();
                     if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
                     sendCallback('text', String(result));
@@ -373,7 +421,6 @@
                 document.getElementById('camera-feed').srcObject = cameraStream;
             } catch (err) {
                 console.error("Camera access error:", err);
-                // Menggunakan notifikasi custom, bukan alert
             }
         }
 
