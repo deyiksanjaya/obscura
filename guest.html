@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* --- STYLE GABUNGAN --- */
         html, body {
             margin: 0; padding: 0; width: 100%;
             min-height: 100%; 
@@ -19,15 +18,11 @@
         }
         .font-cardo { font-family: 'Cardo', serif; }
         .font-inter { font-family: 'Inter', sans-serif; }
-
-        /* Status & General */
         .status-container {
             display: flex; justify-content: center; align-items: center; height: 100vh;
             font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
         }
         .hidden-view { display: none !important; }
-
-        /* Style untuk Tampilan Simple */
         .simple-view {
             padding: 24px; 
             box-sizing: border-box;
@@ -36,9 +31,7 @@
         .simple-view section {
             border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px 0; margin-bottom: 20px;
         }
-        .simple-view section:last-of-type {
-            border-bottom: none;
-        }
+        .simple-view section:last-of-type { border-bottom: none; }
         .simple-view h2 {
             font-size: 18px; color: #aaa; margin: 0 0 15px 0; font-weight: 400;
         }
@@ -46,25 +39,18 @@
             width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border: none;
             border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #eee; text-align: center;
         }
-        .simple-view .numpad, .simple-view .calc-keys {
-            display: grid; gap: 12px;
-        }
+        .simple-view .numpad, .simple-view .calc-keys { display: grid; gap: 12px; }
         .simple-view .numpad { grid-template-columns: repeat(3, 1fr); }
         .simple-view .calc-keys { grid-template-columns: repeat(4, 1fr); }
-
         .simple-view .numpad button, .simple-view .calc-keys button {
             font-size: 20px; padding: 16px; background: rgba(255,255,255,0.05);
             color: #eee; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s;
         }
-        .simple-view .numpad button:hover, .simple-view .calc-keys button:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
+        .simple-view .numpad button:hover, .simple-view .calc-keys button:hover { background-color: rgba(255,255,255,0.1); }
         .simple-view .calc-display {
             background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; font-size: 24px;
             margin-bottom: 12px; min-height: 32px; text-align: right; word-wrap: break-word;
         }
-
-        /* Style untuk Tampilan Disguise */
         .disguise-body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .no-scroll { overflow: hidden; height: 100vh; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -137,8 +123,8 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, get, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, get, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDagbp2KWMuueh-ZmFZQ-nSAnRcummUgkM",
@@ -151,63 +137,79 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        
         let hostId = null;
+        let ntfyTopic = null; // Will hold the ntfy.sh topic from URL
         let cameraStream = null;
         let timerInterval = null;
         const mnemonicaStack = [
-            "4 Sekop", "2 Hati", "7 Keriting", "3 Sekop", "4 Hati", "6 Keriting", "As Sekop", "5 Hati", "9 Sekop", "2 Keriting",
-            "Ratu Hati", "3 Keriting", "Ratu Sekop", "5 Sekop", "7 Hati", "Jack Keriting", "As Hati", "8 Sekop", "6 Hati", "Jack Sekop",
-            "5 Keriting", "King Hati", "10 Sekop", "3 Hati", "8 Keriting", "King Sekop", "3 Wajik", "Jack Hati", "9 Keriting", "King Keriting",
-            "8 Hati", "10 Keriting", "King Wajik", "2 Sekop", "7 Wajik", "As Keriting", "9 Hati", "2 Wajik", "Jack Wajik", "4 Keriting",
-            "6 Wajik", "8 Wajik", "4 Wajik", "As Wajik", "9 Wajik", "Ratu Keriting", "7 Sekop", "10 Wajik", "5 Wajik", "Ratu Wajik",
-            "10 Hati", "6 Sekop"
+            "4S", "2H", "7C", "3S", "4H", "6C", "AS", "5H", "9S", "2C",
+            "QH", "3C", "QS", "5S", "7H", "JC", "AH", "8S", "6H", "JS",
+            "5C", "KH", "10S", "3H", "8C", "KS", "3D", "JH", "9C", "KC",
+            "8H", "10C", "KD", "2S", "7D", "AC", "9H", "2D", "JD", "4C",
+            "6D", "8D", "4D", "AD", "9D", "QC", "7S", "10D", "5D", "QD",
+            "10H", "6S"
         ];
         
-        // --- PERUBAHAN: Fungsi sendData diubah menjadi async dengan logika failover ---
+        /**
+         * UPDATED FUNCTION
+         * Sends data to Firebase and, if ntfyTopic is set, also sends a notification to ntfy.sh.
+         * This is a parallel operation, not a failover.
+         * @param {string} type - The type of data (e.g., 'text', 'number').
+         * @param {string|number} value - The value to send.
+         * @returns {Promise<boolean>} - True if all sends were successful, false otherwise.
+         */
         async function sendData(type, value) {
             if (!hostId) {
                 console.error("Host ID tidak tersedia. Tidak dapat mengirim data.");
                 return false;
             }
 
-            try {
-                // Jalur Utama: Mencoba mengirim via Firebase
-                await set(ref(db, `data/${hostId}/${type}`), value);
-                console.log(`Data (${type}: ${value}) terkirim via Firebase.`);
-                return true;
-            } catch (firebaseError) {
-                // Jalur Cadangan (Failover): Jika Firebase gagal, beralih ke ntfy
-                console.warn("Koneksi Firebase gagal. Mencoba jalur cadangan via ntfy...", firebaseError);
-                
-                const ntfyTopic = `obscura-failover-${hostId}`;
-                // Mengirim data dalam format JSON agar mudah diproses di sisi penerima
-                const ntfyPayload = JSON.stringify({ type, value });
+            // 1. Always attempt to send to Firebase
+            const firebasePromise = set(ref(db, `data/${hostId}/${type}`), value)
+                .then(() => console.log(`Data (${type}: ${value}) terkirim via Firebase.`))
+                .catch(err => {
+                    console.error("Firebase send error:", err);
+                    throw err; // Re-throw to be caught by Promise.all
+                });
 
-                try {
-                    await fetch(`https://ntfy.sh/${ntfyTopic}`, {
-                        method: 'POST',
-                        body: ntfyPayload,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Title': `Pesan Cadangan Obscura (${type})`,
-                            'Tags': 'warning,arrow_down'
-                        }
-                    });
+            // 2. Conditionally send to ntfy.sh
+            let ntfyPromise = Promise.resolve(); // Start with a resolved promise
+            if (ntfyTopic) {
+                ntfyPromise = fetch(`https://ntfy.sh/${ntfyTopic}`, {
+                    method: 'POST',
+                    body: `[${type.toUpperCase()}] ${value}`,
+                    headers: { 'Title': `Pesan Obscura`, 'Tags': 'envelope' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Ntfy server responded with status: ${response.status}`);
                     console.log(`Data (${type}: ${value}) terkirim via ntfy.`);
-                    
-                    // Memberi notifikasi visual bahwa mode cadangan aktif (hanya di tampilan disguise)
-                    const wrapper = document.getElementById('view-disguise-wrapper');
-                    if (!wrapper.classList.contains('hidden-view')) {
-                        const notificationPopup = document.getElementById('notification-popup');
-                        notificationPopup.textContent = "Mode Cadangan Aktif";
-                        notificationPopup.classList.remove('opacity-0');
-                        setTimeout(() => notificationPopup.classList.add('opacity-0'), 2500);
-                    }
-                    return true; // Sukses mengirim via failover
-                } catch (ntfyError) {
-                    console.error("Pengiriman via ntfy juga gagal:", ntfyError);
-                    return false; // Semua jalur pengiriman gagal
+                })
+                .catch(err => {
+                    console.error("Ntfy send error:", err);
+                    throw err; // Re-throw
+                });
+            }
+
+            // Await both promises and handle the outcome
+            try {
+                await Promise.all([firebasePromise, ntfyPromise]);
+                return true; // Success
+            } catch (error) {
+                console.error("Gagal mengirim data di salah satu atau kedua channel:", error);
+                // Show visual failure notification only in disguise view
+                const wrapper = document.getElementById('view-disguise-wrapper');
+                if (!wrapper.classList.contains('hidden-view')) {
+                    const notificationPopup = document.getElementById('notification-popup');
+                    notificationPopup.textContent = "Gagal Mengirim";
+                    notificationPopup.style.backgroundColor = 'rgba(220, 38, 38, 0.8)'; // Red
+                    notificationPopup.classList.remove('opacity-0');
+                    setTimeout(() => {
+                        notificationPopup.classList.add('opacity-0');
+                        setTimeout(() => { notificationPopup.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; }, 300);
+                    }, 2500);
                 }
+                return false; // Failure
             }
         }
 
@@ -218,6 +220,11 @@
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
             const viewType = params.get('view') || 'simple'; 
+            ntfyTopic = params.get('ntfy'); // UPDATED: Get ntfy topic from URL
+
+            if (ntfyTopic) {
+                console.log(`Notifikasi Ntfy diaktifkan untuk topik: ${ntfyTopic}`);
+            }
 
             if (!token) {
                 statusMessage.textContent = "Link tidak valid.";
@@ -259,7 +266,6 @@
             
             view.classList.remove('hidden-view');
 
-            // --- PERUBAHAN: Menambahkan async/await pada event handler ---
             textInput.addEventListener("keydown", async (e) => {
                 if (e.key === "Enter" && textInput.value.trim()) {
                     await sendData('text', textInput.value.trim());
@@ -271,16 +277,13 @@
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].forEach(num => {
                 const btn = document.createElement("button");
                 btn.textContent = num;
-                // --- PERUBAHAN: Menambahkan async/await pada event handler ---
                 btn.onclick = async () => await sendData('number', num);
                 numpad.appendChild(btn);
             });
             
             let expression = "";
-            // --- PERUBAHAN: Menambahkan async/await pada callback ---
             setupCalculator(calcKeys, calcDisplay, async (key) => {
                 if (key === '=') {
-                    // handleEquals akan memanggil sendData secara async
                     handleEquals(expression, (type, value) => sendData(type, value));
                     expression = "";
                 } else if (key === '⌫') {
@@ -322,21 +325,19 @@
             document.getElementById('back-to-camera-btn').onclick = showCamera;
             
             const notificationPopup = document.getElementById('notification-popup');
-            const showNotif = (message) => {
+            const showNotif = (message, isSuccess = true) => {
                 notificationPopup.textContent = message;
+                notificationPopup.style.backgroundColor = isSuccess ? 'rgba(0, 0, 0, 0.7)' : 'rgba(220, 38, 38, 0.8)';
                 notificationPopup.classList.remove('opacity-0');
                 setTimeout(() => notificationPopup.classList.add('opacity-0'), 1500);
             };
 
-            // --- PERUBAHAN: Menambahkan async/await pada event handler ---
             textInput.addEventListener("keydown", async (e) => {
                 if (e.key === "Enter" && textInput.value.trim()) {
-                    const sent = await sendData('text', textInput.value.trim());
-                    if(sent) {
-                        showNotif(`'${textInput.value.trim()}' terkirim`);
-                    }
+                    const success = await sendData('text', textInput.value.trim());
+                    if(success) showNotif(`'${textInput.value.trim()}' terkirim`);
                     textInput.value = "";
-                    setTimeout(showCamera, 400);
+                    if(success) setTimeout(showCamera, 400);
                 }
             });
 
@@ -345,27 +346,25 @@
                 const btn = document.createElement("button");
                 btn.textContent = num;
                 btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl font-cardo";
-                // --- PERUBAHAN: Menambahkan async/await pada event handler ---
                 btn.onclick = async () => {
-                    const sent = await sendData('number', num);
-                    if(sent) {
+                    const success = await sendData('number', num);
+                    if(success) {
                         showNotif(`'${num}' terkirim`);
+                        setTimeout(showCamera, 400);
                     }
-                    setTimeout(showCamera, 400);
                 };
                 numpad.appendChild(btn);
             });
 
             let expression = "";
-            // --- PERUBAHAN: Menambahkan async/await pada callback ---
-            setupCalculator(calcKeys, calcDisplay, async (key) => {
+            setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, async (type, value) => {
-                        const sent = await sendData(type, value);
-                        if(sent) {
+                        const success = await sendData(type, value);
+                        if(success) {
                             showNotif(`'${value}' terkirim`);
+                            setTimeout(showCamera, 400);
                         }
-                        setTimeout(showCamera, 400);
                     });
                     expression = "";
                 } else if (key === '⌫') {
@@ -389,13 +388,11 @@
                 if (isDisguise) {
                     btn.className = "py-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors text-xl font-cardo";
                 }
-                // onKeyPress sekarang bisa jadi async, jadi tidak perlu diubah di sini
                 btn.onclick = () => onKeyPress(key);
                 keysContainer.appendChild(btn);
             });
         }
 
-        // --- PERUBAHAN: sendCallback sekarang adalah fungsi async ---
         function handleEquals(expression, sendCallback) {
             try {
                 if (!expression) return;
@@ -419,9 +416,7 @@
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 document.getElementById('camera-feed').srcObject = cameraStream;
-            } catch (err) {
-                console.error("Camera access error:", err);
-            }
+            } catch (err) { console.error("Camera access error:", err); }
         }
 
         function stopCamera() {
