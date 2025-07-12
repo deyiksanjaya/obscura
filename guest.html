@@ -16,7 +16,6 @@
             min-height: 100%; 
             background: radial-gradient(ellipse at center, #111 0%, #000 100%);
             color: #e0e0e0;
-            /* PERUBAIKAN: Mencegah pengguna menyorot (highlight) konten */
             -webkit-user-select: none; /* Safari */
             -moz-user-select: none;    /* Firefox */
             -ms-user-select: none;     /* IE 10+ and Edge */
@@ -27,7 +26,11 @@
 
         /* Status & General */
         .status-container {
-            display: flex; justify-content: center; align-items: center; height: 100vh;
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
             font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
         }
         .hidden-view { display: none !important; }
@@ -47,11 +50,9 @@
         .simple-view h2 {
             font-size: 18px; color: #aaa; margin: 0 0 15px 0; font-weight: 400;
         }
-        /* Memungkinkan seleksi pada input field jika diperlukan */
         .simple-view input[type="text"] {
             width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border: none;
             border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #eee; text-align: center;
-            -webkit-user-select: text;
             user-select: text;
         }
         .simple-view .numpad, .simple-view .calc-keys {
@@ -78,9 +79,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Memungkinkan seleksi pada input field di tampilan disguise */
         #disguise-text-input {
-            -webkit-user-select: text;
             user-select: text;
         }
     </style>
@@ -89,6 +88,7 @@
 
     <div id="statusContainer" class="status-container">
         <p id="statusMessage">Menghubungkan...</p>
+        <!-- Tombol fullscreen sudah dihapus dari sini -->
     </div>
     <div id="view-simple" class="simple-view hidden-view">
         <section>
@@ -177,6 +177,19 @@
             "10 Hati", "6 Sekop"
         ];
         
+        function requestAppFullScreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => console.error(err));
+            } else if (elem.webkitRequestFullscreen) { /* Safari, Chrome, Opera */
+                elem.webkitRequestFullscreen().catch(err => console.error(err));
+            } else if (elem.mozRequestFullScreen) { /* Firefox */
+                elem.mozRequestFullScreen().catch(err => console.error(err));
+            } else if (elem.msRequestFullscreen) { /* IE/Edge */
+                elem.msRequestFullscreen().catch(err => console.error(err));
+            }
+        }
+
         function sendData(type, value) {
             if (hostId) {
                 set(ref(db, `data/${hostId}/${type}`), value);
@@ -211,7 +224,9 @@
                 await set(guestPresenceRef, { connectedAt: Date.now(), view: viewType });
                 onDisconnect(guestPresenceRef).remove();
 
+                // --- PERUBAIKAN ALUR: Langsung tampilkan view yang sesuai ---
                 statusContainer.classList.add('hidden-view');
+                
                 if (viewType === 'disguise') {
                     setupDisguiseView();
                 } else {
@@ -264,7 +279,12 @@
         
         function setupDisguiseView() {
             document.body.classList.add('no-scroll');
-            document.getElementById('view-disguise-wrapper').classList.remove('hidden-view');
+            const disguiseWrapper = document.getElementById('view-disguise-wrapper');
+            disguiseWrapper.classList.remove('hidden-view');
+            
+            // --- PERUBAIKAN: Tambahkan listener untuk memicu fullscreen pada tap pertama ---
+            disguiseWrapper.addEventListener('click', requestAppFullScreen, { once: true });
+
             const viewDisguise = document.getElementById('view-disguise');
             const viewSender = document.getElementById('view-sender');
 
