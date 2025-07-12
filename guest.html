@@ -16,41 +16,16 @@
             min-height: 100%; 
             background: radial-gradient(ellipse at center, #111 0%, #000 100%);
             color: #e0e0e0;
-            -webkit-user-select: none; /* Safari */
-            -moz-user-select: none;    /* Firefox */
-            -ms-user-select: none;     /* IE 10+ and Edge */
-            user-select: none;         /* Standard syntax */
         }
         .font-cardo { font-family: 'Cardo', serif; }
         .font-inter { font-family: 'Inter', sans-serif; }
 
         /* Status & General */
         .status-container {
-            display: flex; 
-            flex-direction: column; /* Mengubah arah flex untuk tombol */
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh;
+            display: flex; justify-content: center; align-items: center; height: 100vh;
             font-family: 'Cardo', serif; font-size: 1.2em; color: #aaa;
         }
         .hidden-view { display: none !important; }
-
-        /* Style untuk Tombol Fullscreen */
-        #fullscreenBtn {
-            padding: 12px 25px;
-            margin-top: 20px;
-            font-family: 'Cardo', serif;
-            font-size: 18px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #fullscreenBtn:hover {
-            background-color: rgba(255,255,255,0.15);
-        }
 
         /* Style untuk Tampilan Simple */
         .simple-view {
@@ -70,7 +45,6 @@
         .simple-view input[type="text"] {
             width: 100%; box-sizing: border-box; padding: 12px; font-size: 16px; border: none;
             border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #eee; text-align: center;
-            user-select: text;
         }
         .simple-view .numpad, .simple-view .calc-keys {
             display: grid; gap: 12px;
@@ -95,18 +69,12 @@
         .no-scroll { overflow: hidden; height: 100vh; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        #disguise-text-input {
-            user-select: text;
-        }
     </style>
 </head>
 <body class="bg-black">
 
     <div id="statusContainer" class="status-container">
         <p id="statusMessage">Menghubungkan...</p>
-        <!-- Tombol untuk memicu fullscreen -->
-        <button id="fullscreenBtn" class="hidden-view">Masuk Layar Penuh</button>
     </div>
     <div id="view-simple" class="simple-view hidden-view">
         <section>
@@ -195,20 +163,6 @@
             "10 Hati", "6 Sekop"
         ];
         
-        // --- FUNGSI BARU: Meminta Fullscreen (Kompatibel Multi-Browser) ---
-        function requestAppFullScreen() {
-            const elem = document.documentElement; // Targetkan seluruh halaman
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen().catch(err => console.error(err));
-            } else if (elem.webkitRequestFullscreen) { /* Safari, Chrome, Opera */
-                elem.webkitRequestFullscreen().catch(err => console.error(err));
-            } else if (elem.mozRequestFullScreen) { /* Firefox */
-                elem.mozRequestFullScreen().catch(err => console.error(err));
-            } else if (elem.msRequestFullscreen) { /* IE/Edge */
-                elem.msRequestFullscreen().catch(err => console.error(err));
-            }
-        }
-
         function sendData(type, value) {
             if (hostId) {
                 set(ref(db, `data/${hostId}/${type}`), value);
@@ -220,7 +174,6 @@
         async function initializeGuestSession() {
             const statusContainer = document.getElementById('statusContainer');
             const statusMessage = document.getElementById('statusMessage');
-            const fullscreenBtn = document.getElementById('fullscreenBtn'); // Ambil tombol fullscreen
             
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
@@ -244,24 +197,12 @@
                 await set(guestPresenceRef, { connectedAt: Date.now(), view: viewType });
                 onDisconnect(guestPresenceRef).remove();
 
-                // --- PERUBAIKAN ALUR: Tampilkan tombol fullscreen ---
-                statusMessage.textContent = "Koneksi berhasil. Siap untuk masuk.";
-                fullscreenBtn.classList.remove('hidden-view');
-
-                fullscreenBtn.addEventListener('click', () => {
-                    // 1. Minta fullscreen
-                    requestAppFullScreen();
-                    
-                    // 2. Sembunyikan container status
-                    statusContainer.classList.add('hidden-view');
-                    
-                    // 3. Tampilkan view yang sesuai
-                    if (viewType === 'disguise') {
-                        setupDisguiseView();
-                    } else {
-                        setupSimpleView();
-                    }
-                }, { once: true }); // Opsi 'once' agar event listener hanya berjalan sekali
+                statusContainer.classList.add('hidden-view');
+                if (viewType === 'disguise') {
+                    setupDisguiseView();
+                } else {
+                    setupSimpleView();
+                }
 
             } catch (error) {
                 console.error("Initialization error:", error);
@@ -294,16 +235,17 @@
             });
             
             let expression = "";
+            // --- PERUBAIKAN: Menambahkan logika untuk tombol hapus (backspace) ---
             setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, (type, value) => sendData(type, value));
                     expression = "";
-                } else if (key === '⌫') { 
+                } else if (key === '⌫') { // Logika untuk backspace
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression || "0";
+                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
             });
         }
         
@@ -368,6 +310,7 @@
             });
 
             let expression = "";
+            // --- PERUBAIKAN: Menggunakan tombol hapus (backspace) yang konsisten ---
             setupCalculator(calcKeys, calcDisplay, (key) => {
                 if (key === '=') {
                     handleEquals(expression, (type, value) => {
@@ -377,12 +320,12 @@
                         setTimeout(showCamera, 400);
                     });
                     expression = "";
-                } else if (key === '⌫') { 
+                } else if (key === '⌫') { // Logika untuk backspace
                     expression = expression.slice(0, -1);
                 } else { 
                     expression += key; 
                 }
-                calcDisplay.textContent = expression || "0";
+                calcDisplay.textContent = expression || "0"; // Tampilkan 0 jika kosong
             }, true);
             
             showCamera();
@@ -390,6 +333,7 @@
 
         function setupCalculator(keysContainer, displayElement, onKeyPress, isDisguise = false) {
             keysContainer.innerHTML = '';
+            // --- PERUBAIKAN: Mengganti '.' dan '>' dengan ikon backspace '⌫' ---
             const keys = ['7','8','9','/','4','5','6','*','1','2','3','-','0','⌫','=','+'];
             
             keys.forEach(key => {
@@ -411,6 +355,7 @@
                     const cardName = mnemonicaStack[num - 1];
                     sendCallback('text', cardName);
                 } else {
+                    // Evaluasi ekspresi matematika dengan aman
                     let result = new Function('return ' + expression.replace(/[^-()\d/*+.]/g, ''))();
                     if (typeof result === 'number') result = Math.round(result * 1000) / 1000;
                     sendCallback('text', String(result));
@@ -428,6 +373,7 @@
                 document.getElementById('camera-feed').srcObject = cameraStream;
             } catch (err) {
                 console.error("Camera access error:", err);
+                // Menggunakan notifikasi custom, bukan alert
             }
         }
 
